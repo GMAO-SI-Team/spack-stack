@@ -36,6 +36,7 @@ spack:
   - g2c
   - g2tmpl
   - gdal
+  - gempak
   - geos
   - gfsio
   - gftl-shared
