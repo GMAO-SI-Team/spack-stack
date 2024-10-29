@@ -1,7 +1,7 @@
 [submodule "spack"]
   path = spack
   url = https://github.com/jcsda/spack
-  branch = spack-stack-1.6.0
+  branch = release/1.6.0-nco
 [submodule "doc/CMakeModules"]
   path = doc/CMakeModules
   url = https://github.com/noaa-emc/cmakemodules
