@@ -2,7 +2,7 @@ packages:
   all:
     compiler:: [intel@2023.2.0]
     providers:
-      mpi:: [cray-mpich@8.1.28]
+      mpi:: [cray-mpich@8.1.29]
       blas:: [openblas]
       fftw-api:: [fftw]
       lapack:: [openblas]
@@ -13,10 +13,10 @@ packages:
     buildable: False
   cray-mpich:
     externals:
-    - spec: cray-mpich@8.1.28%intel@2023.2.0~wrappers
+    - spec: cray-mpich@8.1.29%intel@2023.2.0~wrappers
       modules:
       - craype-network-ofi
-      - cray-mpich/8.1.28
+      - cray-mpich/8.1.29
 
 ### Modifications of common packages
   ectrans:
@@ -111,8 +111,8 @@ packages:
   git:
     buildable: false
     externals:
-    - spec: git@2.35.2
-      modules: [git/2.35.2]
+    - spec: git@2.42.0
+      modules: [git/2.42.0]
   git-lfs:
     buildable: false
     externals:
@@ -133,7 +133,7 @@ packages:
   # This package is currently incomplete (no headers), but still works
   krb5:
     externals:
-    - spec: krb5@1.20
+    - spec: krb5@1.20.1
       prefix: /usr
   libfuse:
     externals:
@@ -215,7 +215,7 @@ packages:
       prefix: /usr
   slurm:
     externals:
-    - spec: slurm@24.05.3
+    - spec: slurm@24.05.0
       prefix: /usr
   subversion:
     externals:
