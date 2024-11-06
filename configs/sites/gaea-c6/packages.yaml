@@ -2,16 +2,15 @@ packages:
   all:
     compiler:: [intel@2023.2.0]
     providers:
-      mpi:: [cray-mpich@8.1.28]
+      mpi:: [cray-mpich@8.1.29]
 
 ### MPI
   cray-mpich:
     externals:
-    - spec: cray-mpich@8.1.28%intel@2023.2.0~wrappers
-#     prefix: /opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1
+    - spec: cray-mpich@8.1.29%intel@2023.2.0~wrappers
       modules:
       - craype-network-ofi
-      - cray-mpich/8.1.28
+      - cray-mpich/8.1.29
 
 ### All other external packages listed alphabetically
   autoconf:
@@ -30,11 +29,6 @@ packages:
     externals:
     - spec: binutils@2.41
       prefix: /usr
-  cmake:
-    buildable: false
-    externals:
-    - spec: cmake@3.23.1
-      modules: [cmake/3.23.1]
   coreutils:
     externals:
     - spec: coreutils@8.32
@@ -83,8 +77,8 @@ packages:
   git:
     buildable: false
     externals:
-    - spec: git@2.35.2
-      modules: [git/2.35.2]
+    - spec: git@2.42.0
+      modules: [git/2.42.0]
   git-lfs:
     buildable: false
     externals:
@@ -105,7 +99,8 @@ packages:
   # This package is currently incomplete (no headers), but still works
   krb5:
     externals:
-    - spec: krb5@1.20
+    - spec: krb5@1.20.1
+      #prefix: /usr/lib/mit
       prefix: /usr
   libfuse:
     externals:
@@ -183,7 +178,7 @@ packages:
       prefix: /usr
   slurm:
     externals:
-    - spec: slurm@24.05.3
+    - spec: slurm@24.05.0
       prefix: /usr
   subversion:
     externals:
