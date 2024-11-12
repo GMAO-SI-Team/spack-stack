@@ -32,9 +32,9 @@ Ready-to-use spack-stack 1.5.1 installations are available on the following, ful
 +---------------------+----------------------------------+-----------------+---------------------------------------------------------------------------------------------------------+-------------------------------+
 | NOAA (NCEP)         | Acorn                            | Intel           | ``/lfs/h1/emc/nceplibs/noscrub/spack-stack/spack-stack-1.5.1/envs/unified-env``                         | Hang Lei / Alex Richert       |
 +---------------------+----------------------------------+-----------------+---------------------------------------------------------------------------------------------------------+-------------------------------+
-|                     | Gaea C4                          | Intel           | ``/lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c4/spack-stack-1.5.1/envs/unified-env``              | Dom Heinzeller / Cam Book     |
+|                     | Gaea C5                          | Intel           | ``/ncrc/proj/epic/spack-stack/spack-stack-1.5.1/envs/unified-env``                                      | Dom Heinzeller / Cam Book     |
 |                     +----------------------------------+-----------------+---------------------------------------------------------------------------------------------------------+-------------------------------+
-|                     | Gaea C5                          | Intel           | ``/lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-1.5.1/envs/unified-env``              | Dom Heinzeller / Cam Book     |
+|                     | Gaea C6                          | Intel           | ``/ncrc/proj/epic/spack-stack/c6/spack-stack-1.5.1/envs/unified-env``                                   | Dom Heinzeller / Cam Book     |
 | NOAA (RDHPCS)       +----------------------------------+-----------------+---------------------------------------------------------------------------------------------------------+-------------------------------+
 |                     | Hera                             | GCC, Intel      | ``/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.1/envs/unified-env``                     | Mark Potts / Dom Heinzeller   |
 |                     +----------------------------------+-----------------+---------------------------------------------------------------------------------------------------------+-------------------------------+
@@ -454,32 +454,31 @@ For ``spack-stack-1.5.1`` with Intel, proceed with loading the following modules
    module load stack-python/3.10.8
    module available
 
-.. _Preconfigured_Sites_Gaea:
+.. _Preconfigured_Sites_Gaea_C5:
 
 ------------------------------
-NOAA RDHPCS Gaea C4
+NOAA RDHPCS Gaea C5
 ------------------------------
 
 The following is required for building new spack environments and for using spack to build and run software. Make sure to log into a C4 head node, and don't use ``module purge`` on Gaea!
 
 .. code-block:: console
 
-   module unload intel
-   module unload cray-mpich
-   module unload cray-python
-   module unload darshan
-   module use /lustre/f2/dev/role.epic/contrib/spack-stack/c4/modulefiles
-   module load qt/5.15.2
-   module load ecflow/5.8.4
-   module load mysql/8.0.31
+   module load PrgEnv-intel/8.5.0
+   module load intel-classic/2023.2.0
+   module load cray-mpich/8.1.28
+   module load python/3.9.12
+
+   module use /ncrc/proj/epic/spack-stack/modulefiles
+   module load ecflow mysql
 
 For ``spack-stack-1.5.1`` with Intel, load the following modules after loading miniconda and ecflow:
 
 .. code-block:: console
 
-   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c4/spack-stack-1.5.1/envs/unified-env/install/modulefiles/Core
-   module load stack-intel/2022.0.2
-   module load stack-cray-mpich/7.7.20
+   module use /ncrc/proj/epic/spack-stack/spack-stack-1.5.1/envs/unified-env/install/modulefiles/Core
+   module load stack-intel/2023.2.0
+   module load stack-cray-mpich/8.1.28
    module load stack-python/3.10.8
    module available
 
@@ -490,32 +489,31 @@ For ``spack-stack-1.5.1`` with Intel, load the following modules after loading m
 
    cmake -DCMAKE_CROSSCOMPILING_EMULATOR="/usr/bin/srun;-n;1" -DMPIEXEC_EXECUTABLE="/usr/bin/srun" -DMPIEXEC_NUMPROC_FLAG="-n" PATH_TO_SOURCE
 
-.. _Preconfigured_Sites_Gaea_C5:
+.. _Preconfigured_Sites_Gaea_C6:
 
 ------------------------------
-NOAA RDHPCS Gaea C5
+NOAA RDHPCS Gaea C6
 ------------------------------
 
-The following is required for building new spack environments and for using spack to build and run software. Make sure to log into a C5 head node, and don't use ``module purge`` on Gaea!
+The following is required for building new spack environments and for using spack to build and run software. Make sure to log into a C6 head node, and don't use ``module purge`` on Gaea!
 
 .. code-block:: console
 
-   module load PrgEnv-intel/8.3.3
-   module load intel-classic/2023.1.0
-   module load cray-mpich/8.1.25
-   module load python/3.9.12
+   module load PrgEnv-intel/8.5.0
+   module load intel-classic/2023.2.0
+   module load cray-mpich/8.1.29
+   module load python/3.11
 
-   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
-   module load ecflow/5.8.4
-   module load mysql/8.0.31
+   module use /ncrc/proj/epic/spack-stack/modulefiles
+   module load ecflow mysql
 
 For ``spack-stack-1.5.1`` with Intel, load the following modules after loading miniconda and ecflow:
 
 .. code-block:: console
 
-   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-1.5.1/envs/unified-env/install/modulefiles/Core
-   module load stack-intel/2023.1.0
-   module load stack-cray-mpich/8.1.25
+   module use /ncrc/proj/epic/spack-stack/c6/spack-stack-1.5.1/envs/unified-env/install/modulefiles/Core
+   module load stack-intel/2023.2.0
+   module load stack-cray-mpich/8.1.29
    module load stack-python/3.10.8
    module -t available
 

@@ -1,8 +1,8 @@
 modules:
   default:
     enable::
-    - tcl
-    tcl:
+    - lmod
+    lmod:
       exclude:
       - ecflow
       include:
