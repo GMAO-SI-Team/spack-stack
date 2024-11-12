@@ -462,9 +462,9 @@ The following is required for building new spack environments and for using spac
 
 .. code-block:: console
 
-   module load PrgEnv-intel/8.3.3
-   module load intel-classic/2023.1.0
-   module load cray-mpich/8.1.25
+   module load PrgEnv-intel/8.5.0
+   module load intel-classic/2023.2.0
+   module load cray-mpich/8.1.28
    module load python/3.9.12
 
    module use /ncrc/proj/epic/spack-stack/modulefiles
@@ -475,8 +475,8 @@ For ``spack-stack-1.7.0`` with Intel, proceed with loading the following modules
 .. code-block:: console
 
    module use /ncrc/proj/epic/spack-stack/spack-stack-1.7.0/envs/ue-intel/install/modulefiles/Core
-   module load stack-intel/2023.1.0
-   module load stack-cray-mpich/8.1.25
+   module load stack-intel/2023.2.0
+   module load stack-cray-mpich/8.1.28
    module load stack-python/3.10.13
    module -t available
 
