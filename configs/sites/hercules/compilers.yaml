@@ -29,4 +29,4 @@ compilers:
     modules:
     - gcc/12.2.0
     environment: {}
-    extra_rpaths: []
+    extra_rpaths: [/opt/slurm/lib/]
