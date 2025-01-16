@@ -80,3 +80,6 @@
       externals:
       - spec: flex@2.6.4+lex
         prefix: /usr
+    scotch::
+      version: ['7.0.4']
+      require: +mpi+metis~shared~threads~mpi_thread+noarch+esmumps
