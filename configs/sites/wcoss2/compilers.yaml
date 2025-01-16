@@ -22,4 +22,5 @@ compilers:
         # Automake-based builds are installed in lib64 
         # which confuses some packages.
         CONFIG_SITE: ''
+      unset: [PYTHONPATH]
     extra_rpaths: []

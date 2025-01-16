@@ -22,6 +22,7 @@ compilers:
         # Automake-based builds are installed in lib64 
         # which confuses some packages.
         CONFIG_SITE: ''
+      unset: [PYTHONPATH]
     extra_rpaths: []
 - compiler:
     spec: intel@2022.0.2.262
@@ -50,6 +51,7 @@ compilers:
         # Automake-based builds are installed in lib64
         # which confuses some packages.
         CONFIG_SITE: ''
+      unset: [PYTHONPATH]
     extra_rpaths: []
 - compiler:
     spec: gcc@10.3.0
@@ -71,4 +73,5 @@ compilers:
         # Automake-based builds are installed in lib64 
         # which confuses some packages.
         CONFIG_SITE: ''
+      unset: [PYTHONPATH]
     extra_rpaths: []
