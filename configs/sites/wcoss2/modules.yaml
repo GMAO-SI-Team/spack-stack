@@ -5,3 +5,9 @@ modules:
     lmod:
       include:
       - python
+      hierarchy:
+      - mpi
+      - hdf5_virt
+      - netcdf_c_virt
+      - esmf_virt
+      - python_virt
