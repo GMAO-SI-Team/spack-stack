@@ -17,7 +17,7 @@ spack:
   specs:
   - awscli
   - bacio
-  - boost
+  - boost %intel
   - bufr
   - cairo
   - cdo
@@ -25,7 +25,7 @@ spack:
   - cmake
   - crtm
   - curl
-  - ecflow
+  - ecflow ^boost%gcc
   - eckit
   - ecmwf-atlas
   - eigen
