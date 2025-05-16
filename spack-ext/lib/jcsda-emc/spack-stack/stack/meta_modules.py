@@ -64,6 +64,8 @@ SUBSTITUTES_TEMPLATE = {
 COMPILER_CONFIGURATION_TEMPLATES = {
     "oneapi": {
         "2025:" : {
+            "ICXCFG" : os.path.join(this_script_dir, "templates/icx.cfg"),
+            "ICPXCFG" : os.path.join(this_script_dir, "templates/icpx.cfg"),
             "IFXCFG" : os.path.join(this_script_dir, "templates/ifx.cfg"),
         },
     },
@@ -547,7 +549,7 @@ def setup_meta_modules():
                             shutil.copy(source_file, target_file)
                             substitutes["COMPCONFIG"] += setenv_command(
                                 module_choice, env_name, target_file
-                            ) + "\n"
+                            )
                         substitutes["COMPCONFIG"].rstrip("\n")
 
             # Read compiler template into module_content string
