@@ -37,7 +37,7 @@ setenv("SERIAL_CXX", "@CXX@")
 @ENVVARS@
 
 -- compiler configuration files
-@COMPCONFIG@
+-- @COMPCONFIG@
 
 -- module show info
 whatis("Name: " .. pkgName)

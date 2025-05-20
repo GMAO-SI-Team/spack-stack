@@ -33,7 +33,7 @@ setenv {SERIAL_CXX} {@CXX@}
 @ENVVARS@
 
 # compiler configuration files
-@COMPCONFIG@
+# @COMPCONFIG@
 
 proc ModulesHelp {} {
     puts -nonewline stderr "This modulefile defines the compiler meta module for spack-stack"
