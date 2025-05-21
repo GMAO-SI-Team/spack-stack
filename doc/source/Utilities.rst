@@ -46,7 +46,7 @@ The ``util/ldd_check.py`` utility should be run for new installations to ensure 
 check_libirc.sh (Linux only)
 ------------------------------
 
-The ``util/check_libirc.sh`` utility should be run for new installations with Intel oneAPI (``icx``, ``icpx``, ``ifort`` or ``ifx``). In an active environment after a successful ``spack install``, execute the following command to check if any of the shared libraries or executables is linked to ``libirc.so``. See https://github.com/JCSDA/spack-stack/issues/1436 for some background context and why we want need to avoid ``libirc.so``. If ``libirc.so`` is linked to a shared library or executable in a spack-stack environment, please create an issue in the [spack-stack GitHub repository](https://github.com/JCSDA/spack-stack/issues). For downstream applications, see the [spack-stack wiki](https://github.com/JCSDA/spack-stack/wiki/Intel-oneAPI-compilers-and-libirc.so).
+The ``util/check_libirc.sh`` utility should be run for new installations with Intel oneAPI (``icx``, ``icpx``, ``ifort`` or ``ifx``). In an active environment after a successful ``spack install``, execute the following command to check if any of the shared libraries or executables is linked to ``libirc.so``. See https://github.com/JCSDA/spack-stack/issues/1436 for some background context and why we want need to avoid ``libirc.so``. If ``libirc.so`` is linked to a shared library or executable in a spack-stack environment, please create an issue in the spack-stack GitHub repository (https://github.com/JCSDA/spack-stack/issues). For downstream applications, see the spack-stack wiki (https://github.com/JCSDA/spack-stack/wiki/Intel-oneAPI-compilers-and-libirc.so).
 
 .. code-block:: console
 
