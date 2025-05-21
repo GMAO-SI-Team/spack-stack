@@ -2,7 +2,7 @@
 
 ierror=0
 
-searchfor="libintlc.so"
+searchfor="libirc.so"
 
 echo "Checking shared libraries for ${searchfor} ..."
 for file in `find ${SPACK_ENV} -type f -iname '*.so*'`; do

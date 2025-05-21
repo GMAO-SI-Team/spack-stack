@@ -4,12 +4,10 @@ import copy
 import logging
 import os
 import re
-import shutil
 import sys
 
 import spack
 import spack.environment as ev
-from spack.version import from_string
 
 # logging.basicConfig(level=logging.INFO)
 logging.basicConfig(format="%(message)s", level=logging.DEBUG)
@@ -47,7 +45,6 @@ SUBSTITUTES_TEMPLATE = {
     "F77": "",
     "FC": "",
     "COMPFLAGS": "",
-    #"COMPCONFIG": "",
     "ENVVARS": "",
     "MPICC": "",
     "MPICXX": "",
@@ -57,19 +54,6 @@ SUBSTITUTES_TEMPLATE = {
     "PYTHONROOT": "",
 }
 
-# Compiler configuration templates (if applicable).
-# First key is compiler name (lowercase) as known to spack,
-# second key is compiler version in a way that spack understands:
-# '2025.1.0', '2025:', ':2026', '2025:2026', ...
-COMPILER_CONFIGURATION_TEMPLATES = {
-    "oneapi": {
-        "2025:" : {
-            "ICXCFG" : os.path.join(this_script_dir, "templates/icx.cfg"),
-            "ICPXCFG" : os.path.join(this_script_dir, "templates/icpx.cfg"),
-            "IFXCFG" : os.path.join(this_script_dir, "templates/ifx.cfg"),
-        },
-    },
-}
 
 def versiontuple(v):
     """Version comparison without relying on packaging module"""
@@ -531,26 +515,6 @@ def setup_meta_modules():
                 substitutes["MODULEPATHS"] += modulepath_prepend_command(module_choice, modulepath)
             substitutes["MODULEPATHS"] = substitutes["MODULEPATHS"].rstrip("\n")
             logging.debug("  ... ... MODULEPATHS  : {}".format(substitutes["MODULEPATHS"]))
-
-            ## If there are configuration files for this compiler and version,
-            ## copy those and apply any environment settings in the modulefile
-            #if compiler_name in COMPILER_CONFIGURATION_TEMPLATES.keys():
-            #    for version_string in COMPILER_CONFIGURATION_TEMPLATES[compiler_name].keys():
-            #        target_versions = from_string(version_string)
-            #        if from_string(compiler_version).satisfies(target_versions):
-            #            config_dict = COMPILER_CONFIGURATION_TEMPLATES[compiler_name][version_string]
-            #            for (env_name, source_file) in config_dict.items():
-            #                target_file = os.path.join(
-            #                    install_dir,
-            #                    compiler_name,
-            #                    compiler_version,
-            #                    os.path.split(source_file)[1]
-            #                )
-            #                shutil.copy(source_file, target_file)
-            #                substitutes["COMPCONFIG"] += setenv_command(
-            #                    module_choice, env_name, target_file
-            #                )
-            #            substitutes["COMPCONFIG"].rstrip("\n")
 
             # Read compiler template into module_content string
             with open(COMPILER_TEMPLATES[module_choice]) as f:
