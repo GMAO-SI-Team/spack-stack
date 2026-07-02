@@ -72,6 +72,19 @@ usage() {
   echo "      forces NAG stack to be built using this specific compiler"
   echo "  -a  Set PBS/SLURM account (default: s1873);"
   echo "      overrides the ACCOUNT environment variable"
+  echo "  -p  Set SLURM partition (e.g. preops, normal, compute);"
+  echo "      overrides the default partition for the site;"
+  echo "      also accepted as --partition=<value>;"
+  echo "      NOTE: only applies to NCCS hosts (discover, discover-gmao)"
+  echo "  -q  Set SLURM QOS (e.g. benchmark, high, normal);"
+  echo "      overrides the default QOS for the site;"
+  echo "      also accepted as --qos=<value>;"
+  echo "      NOTE: only applies to NCCS hosts (discover, discover-gmao)"
+  echo "      --constraint=<value>"
+  echo "          Set SLURM node constraint (e.g. mil, cas, sky);"
+  echo "          overrides the default constraint for the site;"
+  echo "          no short form available (-c and -C are already used);"
+  echo "          NOTE: only applies to NCCS hosts (discover, discover-gmao)"
   echo "  -s  Submit 'spack install' to batch scheduler"
   echo "  -t  Run tests for specific thirdparty dependencies;"
   echo "      these are currently hardcoded in batch_install.sh"
@@ -82,7 +95,7 @@ usage() {
   echo
 }
 
-while getopts r:m:d:c:C:N:H:a:nuesth flag
+while getopts r:m:d:c:C:N:H:a:p:q:nuesth flag
 do
   case "${flag}" in
     r)
@@ -109,6 +122,12 @@ do
     a)
       ACCOUNT=${OPTARG}
       ;;
+    p)
+      SPACK_STACK_SLURM_PARTITION=${OPTARG}
+      ;;
+    q)
+      SPACK_STACK_SLURM_QOS=${OPTARG}
+      ;;
     n)
       SPACK_STACK_DRY_RUN="true"
       ;;
@@ -130,6 +149,40 @@ do
       ;;
   esac
 done
+shift $((OPTIND - 1))
+
+# Parse any remaining long options (e.g. --constraint, --partition, --qos)
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --constraint=*)
+      SPACK_STACK_SLURM_CONSTRAINT="${1#*=}"
+      ;;
+    --constraint)
+      SPACK_STACK_SLURM_CONSTRAINT="$2"
+      shift
+      ;;
+    --partition=*)
+      SPACK_STACK_SLURM_PARTITION="${1#*=}"
+      ;;
+    --partition)
+      SPACK_STACK_SLURM_PARTITION="$2"
+      shift
+      ;;
+    --qos=*)
+      SPACK_STACK_SLURM_QOS="${1#*=}"
+      ;;
+    --qos)
+      SPACK_STACK_SLURM_QOS="$2"
+      shift
+      ;;
+    *)
+      echo "ERROR, unknown argument: $1"
+      usage
+      exit 1
+      ;;
+  esac
+  shift
+done
 
 echo "INFO: $0 options:"
 echo "  SPACK_STACK_ROLE:                            ${SPACK_STACK_ROLE:-not set}"
@@ -143,6 +196,9 @@ echo "  SPACK_STACK_IGNORE_ENV_EXIST:                ${SPACK_STACK_IGNORE_ENV_EX
 echo "  SPACK_STACK_SUBMIT_TO_SCHEDULER:             ${SPACK_STACK_SUBMIT_TO_SCHEDULER:-false}"
 echo "  SPACK_STACK_RUN_TESTS:                       ${SPACK_STACK_RUN_TESTS:-false}"
 echo "  ACCOUNT:                                     ${ACCOUNT:-s1873 (default)}"
+echo "  SPACK_STACK_SLURM_PARTITION:                 ${SPACK_STACK_SLURM_PARTITION:-use site default}"
+echo "  SPACK_STACK_SLURM_QOS:                       ${SPACK_STACK_SLURM_QOS:-use site default}"
+echo "  SPACK_STACK_SLURM_CONSTRAINT:                ${SPACK_STACK_SLURM_CONSTRAINT:-use site default}"
 
 # Set default account if not provided via -a or environment
 ACCOUNT=${ACCOUNT:-s1873}
@@ -394,32 +450,52 @@ function run_interactive_job() {
            ${script}
       ;;
     discover)
-      slurm_constraint="--constraint=mil"
-      if [[ "${ACCOUNT}" == "s1873" ]]; then
-        slurm_partition="--partition=preops --qos=benchmark"
+      slurm_constraint="${SPACK_STACK_SLURM_CONSTRAINT:+--constraint=${SPACK_STACK_SLURM_CONSTRAINT}}"
+      slurm_constraint="${slurm_constraint:---constraint=mil}"
+      if [[ -n "${SPACK_STACK_SLURM_PARTITION}" ]]; then
+        slurm_partition="--partition=${SPACK_STACK_SLURM_PARTITION}"
+      elif [[ "${ACCOUNT}" == "s1873" ]]; then
+        slurm_partition="--partition=preops"
       else
         slurm_partition=""
+      fi
+      if [[ -n "${SPACK_STACK_SLURM_QOS}" ]]; then
+        slurm_qos="--qos=${SPACK_STACK_SLURM_QOS}"
+      elif [[ "${ACCOUNT}" == "s1873" ]]; then
+        slurm_qos="--qos=benchmark"
+      else
+        slurm_qos=""
       fi
       slurm_log="${job_name}.log"
       echo "INFO: salloc output redirected to ${slurm_log}"
       salloc --nodes=1 --ntasks-per-node=${tpn} --time=${walltime} \
-             ${slurm_constraint} ${slurm_partition} \
+             ${slurm_constraint} ${slurm_partition} ${slurm_qos} \
              --job-name=${job_name} \
              --account=${ACCOUNT} bash ${script} \
              > "${slurm_log}" 2>&1
       echo "INFO: salloc job complete, log: ${slurm_log}"
       ;;
     discover-gmao)
-      slurm_constraint="--constraint=mil"
-      if [[ "${ACCOUNT}" == "s1873" ]]; then
-        slurm_partition="--partition=preops --qos=benchmark"
+      slurm_constraint="${SPACK_STACK_SLURM_CONSTRAINT:+--constraint=${SPACK_STACK_SLURM_CONSTRAINT}}"
+      slurm_constraint="${slurm_constraint:---constraint=mil}"
+      if [[ -n "${SPACK_STACK_SLURM_PARTITION}" ]]; then
+        slurm_partition="--partition=${SPACK_STACK_SLURM_PARTITION}"
+      elif [[ "${ACCOUNT}" == "s1873" ]]; then
+        slurm_partition="--partition=preops"
       else
         slurm_partition=""
+      fi
+      if [[ -n "${SPACK_STACK_SLURM_QOS}" ]]; then
+        slurm_qos="--qos=${SPACK_STACK_SLURM_QOS}"
+      elif [[ "${ACCOUNT}" == "s1873" ]]; then
+        slurm_qos="--qos=benchmark"
+      else
+        slurm_qos=""
       fi
       slurm_log="${job_name}.log"
       echo "INFO: salloc output redirected to ${slurm_log}"
       salloc --nodes=1 --ntasks-per-node=${tpn} --time=${walltime} \
-             ${slurm_constraint} ${slurm_partition} \
+             ${slurm_constraint} ${slurm_partition} ${slurm_qos} \
              --job-name=${job_name} \
              --account=${ACCOUNT} bash ${script} \
              > "${slurm_log}" 2>&1
