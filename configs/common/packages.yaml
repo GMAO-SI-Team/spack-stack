@@ -305,7 +305,9 @@ packages:
       - '@2.5.4'
     nccmp:
       require:
-      - '@1.9.0.1'
+      - any_of:
+        - '@1.9.1.0'
+        - '@1.11.0.0'
     ncio:
       require:
       - '@1.1.2'
