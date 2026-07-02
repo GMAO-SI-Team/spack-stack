@@ -66,7 +66,7 @@ usage() {
   echo "      requires role 'dev' and mode 'build'"
   echo "  -e  Continue builds/install in existing environments;"
   echo "      by default, exit with an error if already exist"
-  echo "  -C  Set a comma-separated list of compilers to use (e.g. gcc@=15.2.0,nag@=7.2.7243);"
+  echo "  -C  Set a comma-separated list of compilers to use (e.g. gcc@=15.3.0,nag@=7.2.7243);"
   echo "      overrides the default compilers for the site"
   echo "  -N  Path to nagfor executable (e.g. /opt/nag/bin/nagfor);"
   echo "      forces NAG stack to be built using this specific compiler"
@@ -291,11 +291,11 @@ case ${SPACK_STACK_BATCH_HOST} in
       export MAC_GMAO_NAG_PREFIX=$(dirname $(dirname "${MAC_GMAO_NAG_PATH}"))
     fi
 
-    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.2.0")
+    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0")
     if [[ -n "${MAC_GMAO_NAG_VERSION}" ]]; then
       SPACK_STACK_BATCH_COMPILERS+=("nag@=${MAC_GMAO_NAG_VERSION}")
     fi
-    
+
     # Auto-detect Apple Clang version
     if command -v clang &> /dev/null; then
       export MAC_GMAO_APPLE_CLANG_VERSION=$(clang --version | grep "Apple clang version" | awk '{print $4}')
@@ -896,7 +896,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         nag_version=${MAC_GMAO_NAG_VERSION}
         nag_path=${MAC_GMAO_NAG_PATH}
         nag_prefix=${MAC_GMAO_NAG_PREFIX}
-        
+
         apple_clang_version=${MAC_GMAO_APPLE_CLANG_VERSION:-"21.0.0"}
 
         for template_file in "${macos_site_dir}"/*.yaml.template; do
