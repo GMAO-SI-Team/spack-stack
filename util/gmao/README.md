@@ -147,7 +147,7 @@ The `ecbuild_add_lang_flags.cmake` file is typically found inside the staged or 
 
 ```bash
 spack env activate -p envs/ue-oneapi-2024.2.0-build
-find $(spack location -s ectrans) -name ecbuild_add_lang_flags.cmake
+find $(spack location -i ecbuild) -name ecbuild_add_lang_flags.cmake
 ```
 
-A `.orig` backup is created automatically when `--patch` is applied. `--revert` restores from this backup and removes it. If the patch has already been applied, the script will skip silently.
+A `.orig` backup is created automatically when `--patch` is applied. `--revert` restores from this backup and removes it. If the patch has already been applied, the script will print a message and skip.
