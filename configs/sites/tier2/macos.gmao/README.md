@@ -99,7 +99,7 @@ The `batch_install.sh` script automates the creation of environments (e.g., `gcc
 
 ### Compiler Selection and Auto-Detection
 
-By default, `batch_install.sh` builds the `gcc@=15.2.0` stack. 
+By default, `batch_install.sh` builds the `gcc@=15.3.0` stack. 
 
 The script will automatically detect your currently active version of Apple Clang (e.g. `apple-clang@21.0.0`) and substitute it into the templates. If the NAG Fortran compiler (`nagfor`) is found in your `PATH`, the script will automatically detect its version as well and add it to the build queue (e.g., `nag@=7.2.7243`). 
 
@@ -112,7 +112,7 @@ If your NAG compiler is installed in a non-standard location and not in your `PA
 If you want to explicitly override the compilers built by the script entirely, use the `-C` flag with a comma-separated list of Spack compiler specs:
 
 ```bash
-./util/gmao/batch_install.sh -C "gcc@=15.2.0,nag@=7.2.7243" -r dev -m build -H macos.gmao -e
+./util/gmao/batch_install.sh -C "gcc@=15.3.0,nag@=7.2.7243" -r dev -m build -H macos.gmao -e
 ```
 
 *Note: For every compiler you specify, you must have a corresponding `packages_<compiler_name>-<version>.yaml.template` file in this site directory.*
@@ -161,7 +161,7 @@ Depending on which compiler you built, you will need to add the correct `install
 #### Loading the GCC Stack
 
 ```bash
-module use -a /path/to/spack-stack/envs/ge-gcc-15.2.0-build/install/modulefiles/Core
+module use -a /path/to/spack-stack/envs/ge-gcc-15.3.0-build/install/modulefiles/Core
 module load stack-gcc stack-openmpi geos-gcm-env
 ```
 
@@ -187,7 +187,7 @@ You only need to create each environment once. Our `macos.gmao` site configurati
 #### GCC Environment
 
 ```bash
-spack stack create env --name ge-gcc-15.2.0 --template geos-dev --site macos.gmao --compiler=gcc-15.2.0
+spack stack create env --name ge-gcc-15.3.0 --template geos-dev --site macos.gmao --compiler=gcc-15.3.0
 ```
 
 #### NAG Environment
@@ -203,11 +203,11 @@ spack stack create env --name genag-nag-7.2.7243 --template geos-dev-nag --site 
 Navigate to the environment directory you wish to work on. For example, if you built the GCC stack:
 
 ```bash
-cd envs/ge-gcc-15.2.0-build
+cd envs/ge-gcc-15.3.0-build
 spack env activate -p .
 ```
 
-> **Note:** If you are building or debugging a different compiler stack, be sure to `cd` into that specific environment directory instead (e.g., `envs/ge-nag-7.2.7243-build` or `envs/ge-clang-22.1.3-build`).
+> **Note:** If you are building or debugging a different compiler stack, be sure to `cd` into that specific environment directory instead (e.g., `envs/ge-nag-7.2.7243-build` or `envs/ge-clang-22.1.8-build`).
 
 > **Important:** Run this in *every* terminal where you plan to run Spack commands for this environment.
 
