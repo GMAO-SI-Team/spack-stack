@@ -223,7 +223,7 @@ packages:
       - ~netcdf
     hdf5:
       require:
-      - '@1.14.5'
+      - '@2.1.0'
       - +hl
       - +fortran
       - +mpi
