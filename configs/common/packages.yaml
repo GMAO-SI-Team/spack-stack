@@ -301,11 +301,13 @@ packages:
     nemsiogfs:
       require:
       - '@2.5.4'
+    # Note: per spack, the first is "preferred", so if you
+    # need 1.9.0.1, you need to explicitly request it in your spec.
     nccmp:
       require:
       - any_of:
-        - '@1.9.0.1'
         - '@1.11.0.0'
+        - '@1.9.0.1'
     ncio:
       require:
       - '@1.1.2'
