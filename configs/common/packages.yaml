@@ -196,6 +196,10 @@ packages:
     gfsio:
       require:
       - '@1.4.2'
+    # py-greenlet@:3.0 requires python@:3.12; @3.1: has no upper cap
+    py-greenlet:
+      require:
+      - '@3.1:'
     global-workflow-env:
       require:
       - '+uwtools'
@@ -334,7 +338,6 @@ packages:
       - ~fortran
     openmpi:
       require:
-      - ~internal-hwloc
       - +two_level_namespace
     openssl:
       require:
@@ -343,6 +346,10 @@ packages:
     p4est:
       require:
       - '@2.8.7'
+    # pmix+docs pulls in py-recommonmark -> py-sphinx@:6.1 -> python@:3.12
+    pmix:
+      require:
+      - ~docs
     # Earlier versions of pango don't build on Blueback because of
     # a bug in finding the correct Python interpreter from spack.
     pango:
@@ -375,10 +382,10 @@ packages:
     # Turn off crypt variant for Python; this leads to build errors
     # with Intel in py-cryptography unless external curl and openssl
     # are removed, which itself is problematic.
+    # Note: crypt variant only exists for python@:3.12; python@3.13 removed it entirely.
     python:
       require:
-      - '@3.11'
-      - ~crypt
+      - '@3.13'
     # Not sure about the exact version requirements, but earlier
     # versions (definitely 4.5.3 and earlier) don't work with newer
     # py-setuptools (version 68 and later) because of a breaking
@@ -386,8 +393,10 @@ packages:
     py-beautifulsoup4:
       require:
       - '@4.12.3:'
+    # py-cartopy@:0.22 requires py-numpy@:1; @0.24.0 caps python@:3.12; @0.24.1: allows python@3.10:3.14
     py-cartopy:
       require:
+      - '@0.24.1:'
       - +plotting
     # See py-pycparser
     py-click:
@@ -401,9 +410,16 @@ packages:
     py-cryptography:
       require:
       - '@42'
+    py-cython:
+      require:
+      - '@3.2.4'
     py-h5py:
       require:
       - ~mpi
+    # py-ipykernel@5.x requires python@3.6:3.9; @6.11: has no upper cap
+    py-ipykernel:
+      require:
+      - '@6.11:'
     # Needed to fix issues of older versions (e.g. 1.13.0) with newer Python and
     # newer python packages: "ValueError: Unknown classifier in field project.classifiers ..."
     py-hatchling:
@@ -412,7 +428,7 @@ packages:
     # To avoid duplicate packages
     py-lxml:
       require:
-      - '@5.2.2'
+      - '@6.0.2'
     # https://github.com/JCSDA/spack-stack/issues/1276
     py-matplotlib:
       require:
@@ -420,26 +436,35 @@ packages:
       #- '@3.7.4'
       #- '@3.8.0'
     # https://github.com/JCSDA/spack-stack/issues/1971
+    # py-netcdf4@:1.6 requires py-numpy@:1; @1.7: allows numpy@2
     py-netcdf4:
       require:
       - ~mpi
+      - '@1.7:'
+    # py-pandas@:2.2.1 requires py-numpy@:1; @:2.2.2 requires python@:3.12
+    py-pandas:
+      require:
+      - '@2.2.3:'
     # To avoid duplicate packages
     py-numpy:
       require:
-      - '@1'
+      - '@2.1:'
     # To avoid duplicate packages
     py-poetry-core:
       require:
-      - '@1.7'
+      - '@2.3.2'
     # See py-pycparser
     py-pooch:
       require:
       - '@1.7.0'
+    py-pytest:
+      require:
+      - '@9:'
     # Need older version of py-pycparser until we can update setuputils to >= 77 ?
     # https://github.com/pydata/xarray/issues/10588
     py-pycparser:
       require:
-      - '@2.21'
+      - '@3.0'
     # Need at least py-pygithub@2.7 for self-hosted runner management
     py-pygithub:
       require:
@@ -451,7 +476,7 @@ packages:
     # See py-pycparser
     py-pyparsing:
       require:
-      - '@3.1.2'
+      - '@3.3.2'
     # To avoid duplicate packages
     py-python-dateutil:
       require:
@@ -463,12 +488,20 @@ packages:
     # To avoid duplicate packages
     py-ruamel-yaml:
       require:
-      - '@0.17.16'
+      - '@0.18:'
+    # py-ruamel-yaml-clib@:0.2.8 requires python@:3.12; @0.2.12: allows 3.13
+    py-ruamel-yaml-clib:
+      require:
+      - '@0.2.12:'
     # https://github.com/JCSDA/spack-stack/issues/1942
     # https://github.com/spack/spack-packages/issues/3695
     py-setuptools:
       require:
-      - '@73.0.1'
+      - '@80:'
+    # py-sphinx@:6.1 requires python@:3.12; @6.2: allows 3.13
+    py-sphinx:
+      require:
+      - '@6.2:'
     # See py-pycparser
     py-sphinxcontrib-bibtex:
       require:
@@ -480,12 +513,15 @@ packages:
     # To avoid duplicate packages
     py-urllib3:
       require:
-      - '@1.26.20'
-      # OR - '@1.26.12' ?
+      - '@2.6.3'
     # To avoid duplicate packages
     py-versioneer:
       require:
       - '@=0.28'
+    # py-xarray@:2024.5 requires py-numpy@:1; @2024.7 caps py-pandas@2.1; @2025.7: allows numpy@2 + pandas@2.2:
+    py-xarray:
+      require:
+      - '@2025.7:'
     # On a per-site basis, either set qt to buildable: false
     # or add requirement to build with gcc for Intel oneAPI
     qt:

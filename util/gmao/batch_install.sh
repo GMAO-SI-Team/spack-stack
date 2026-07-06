@@ -954,15 +954,23 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
 
     if [[ "${host}" == "macos.gmao" && ! ${env_exists} == "true" ]]; then
       echo "Running spack external find for macOS generic packages..."
-      spack external find --not-buildable autoconf automake bash cmake cvs doxygen gawk git-lfs groff libtool ninja npm subversion swig texinfo
+      # cmake is excluded here and injected manually below with ~doc to prevent
+      # the solver from considering cmake+doc (which pulls in py-sphinx@:6.1 -> python@:3.12)
+      spack external find --not-buildable autoconf automake bash cvs doxygen gawk git-lfs groff libtool ninja npm subversion swig texinfo
 
       brew_prefix=$(brew --prefix)
       tcsh_version=$(${brew_prefix}/bin/tcsh --version | awk '{print $2}')
       rust_version=$(${brew_prefix}/bin/rustc --version | awk '{print $2}')
+      cmake_version=$(${brew_prefix}/bin/cmake --version | head -1 | awk '{print $3}')
 
       echo "Manually injecting tricky macOS packages into Spack configuration..."
       cat << EOF > spack-macos-externals.yaml
 packages:
+  cmake:
+    externals:
+    - spec: cmake@${cmake_version}+ownlibs+doc
+      prefix: ${brew_prefix}
+    buildable: false
   tcsh:
     externals:
     - spec: tcsh@${tcsh_version}

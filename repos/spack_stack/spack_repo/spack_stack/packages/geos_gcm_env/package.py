@@ -53,6 +53,11 @@ class GeosGcmEnv(BundlePackage):
     depends_on("perl", type="run")
 
     depends_on("py-cmocean", type="run")
+    depends_on("py-matplotlib", type="run")
+    depends_on("py-netcdf4", type="run")
+    depends_on("py-pandas", type="run")
+    depends_on("py-xarray", type="run")
+    depends_on("py-cartopy", type="run")
 
     depends_on("nco", type="run")
     depends_on("nccmp", type="run")
