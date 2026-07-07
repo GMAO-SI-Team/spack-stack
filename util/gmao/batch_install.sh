@@ -88,6 +88,8 @@ usage() {
   echo "  -s  Submit 'spack install' to batch scheduler"
   echo "  -t  Run tests for specific thirdparty dependencies;"
   echo "      these are currently hardcoded in batch_install.sh"
+  echo "  -o  Concretize-only: stop after concretization (do not install);"
+  echo "      also accepted as --concretize-only"
   echo "  -n  Dry-run: print what would be executed without running anything"
   echo "  -H  Provide hostname manually (overrides autodetection);"
   echo "      useful when VPN/etc masks the real hostname"
@@ -95,7 +97,7 @@ usage() {
   echo
 }
 
-while getopts r:m:d:c:C:N:H:a:p:q:nuesth flag
+while getopts r:m:d:c:C:N:H:a:p:q:nouesth flag
 do
   case "${flag}" in
     r)
@@ -131,6 +133,9 @@ do
     n)
       SPACK_STACK_DRY_RUN="true"
       ;;
+    o)
+      SPACK_STACK_CONCRETIZE_ONLY="true"
+      ;;
     u)
       SPACK_STACK_UPDATE_DEV_CACHES="true"
       ;;
@@ -154,6 +159,9 @@ shift $((OPTIND - 1))
 # Parse any remaining long options (e.g. --constraint, --partition, --qos)
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --concretize-only)
+      SPACK_STACK_CONCRETIZE_ONLY="true"
+      ;;
     --constraint=*)
       SPACK_STACK_SLURM_CONSTRAINT="${1#*=}"
       ;;
@@ -1038,6 +1046,13 @@ EOF
 
     # Check for duplicate packages
     ./util/show_duplicate_packages.py -i crtm -i crtm-fix -i esmf -i mapl -i neptune-env -i py-cython -i ip -i fms -i geos-gcm-env
+
+    # Stop here if --concretize-only / -o was requested
+    if [[ "${SPACK_STACK_CONCRETIZE_ONLY}" == "true"* ]]; then
+      echo "INFO: --concretize-only requested; stopping after concretization."
+      echo "INFO: Concretization log: ${SPACK_STACK_DIR}/logs/log.concretize.${env_name}.${LOG_TIMESTAMP}"
+      exit 0
+    fi
 
     # Update local source cache if requested
     if [[ "${update_source_cache}" == "true"* ]]; then

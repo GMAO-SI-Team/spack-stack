@@ -43,6 +43,7 @@ Run with `-h` for full usage:
 | `-s` | Submit the install step to the batch scheduler (SLURM/PBS) instead of running interactively. |
 | `-e` | Continue if environment directories already exist. Required on all runs after the first. |
 | `-u` | Populate bootstrap, source, and cargo mirrors. Requires `-r dev -m build`. First run only. |
+| `-o` / `--concretize-only` | Stop after concretization; do not proceed to install. Useful for inspecting solver output before committing to a full build. |
 | `-a ACCOUNT` | Override the scheduler account (default: `s1873`). |
 | `-n` | Dry-run: print what would be executed without running anything. |
 | `-p` / `--partition` | Override SLURM partition. **NCCS hosts only** (discover, discover-gmao). |
