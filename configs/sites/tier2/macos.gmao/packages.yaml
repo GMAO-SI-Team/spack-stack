@@ -45,3 +45,8 @@ packages:
     externals:
     - spec: perl@5.34.1~cpanm+opcode+open+shared+threads
       prefix: /usr
+  wget:
+    externals:
+    - spec: wget@1.25.0
+      prefix: /Users/mathomp4/.homebrew/brew
+    buildable: false
