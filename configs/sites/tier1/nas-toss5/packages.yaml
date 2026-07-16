@@ -9,6 +9,13 @@ packages:
     variants: +python +grib2 +graphics +lidar2nc +modis
   zlib-api:
     buildable: False
+  # mimalloc is vendored and downloaded via FetchContent; fails on air-gapped compute nodes
+  arrow:
+    require:
+    - '~mimalloc'
+  gdal:
+    require:
+    - '~arrow'
 ### All other external packages listed alphabetically
   automake:
     externals:
@@ -52,8 +59,8 @@ packages:
       prefix: /usr
   gh:
     externals:
-    - spec: gh@2.83.1
-      prefix: /nobackup/gmao_SIteam/gh/2.83.1
+    - spec: gh@2.96.0
+      prefix: /nobackup/gmao_SIteam/gh/2.96.0
   git:
     buildable: False
     externals:

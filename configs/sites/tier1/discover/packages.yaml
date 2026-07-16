@@ -8,6 +8,13 @@ packages:
     variants: ~shared
   met:
     variants: +python +grib2 +graphics +lidar2nc +modis
+  # mimalloc is vendored and downloaded via FetchContent; fails on air-gapped compute nodes
+  arrow:
+    require:
+    - '~mimalloc'
+  gdal:
+    require:
+    - '~arrow'
 ### All other external packages listed alphabetically
   autoconf:
     externals:
@@ -79,6 +86,11 @@ packages:
     externals:
     - spec: git-lfs@3.4.0
       prefix: /usr/local/other/git-lfs/3.4.0
+  gh:
+    buildable: False
+    externals:
+    - spec: gh@2.96.0
+      prefix: /discover/swdev/gmao_SIteam/gh
   gmake:
     externals:
     - spec: gmake@4.2.1
@@ -98,6 +110,10 @@ packages:
   m4:
     externals:
     - spec: m4@1.4.18
+      prefix: /usr
+  ncurses:
+    externals:
+    - spec: ncurses@6.1 +termlib abi=6
       prefix: /usr
   openssh:
     externals:

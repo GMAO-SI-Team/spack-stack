@@ -12,7 +12,7 @@ packages:
   intel-oneapi-compilers:
     buildable: false
     externals:
-    - spec: intel-oneapi-compilers@2024.2.0
+    - spec: intel-oneapi-compilers@2024.2.0 +fix_rt_linkage
       prefix: /usr/local/intel/oneapi/2024
       modules:
       - comp/intel/2024.2.0
@@ -53,3 +53,11 @@ packages:
     externals:
     - spec: intel-oneapi-mkl@2024.2
       prefix: /usr/local/intel/oneapi/2024
+
+  llvm:
+    buildable: false
+    externals:
+    - spec: llvm@22.1.7
+      prefix: /discover/nobackup/projects/gmao/SIteam/comp/SLES-15/llvm-flang/22.1.7
+      modules:
+      - comp/llvm-flang/22.1.7

@@ -120,7 +120,10 @@ export RUSTUP_HOME="{cargo_home}/rustup"
     env.set("CARGO_HOME", cargo_home)
     if cargo_bin:
         env.prepend_path("PATH", cargo_bin)
-    for root, dirs, files in os.walk(pkg.stage.source_path):
-        if "Cargo.toml" in files:
-            with working_dir(root):
-                cargo_exe("fetch", env=env)
+    # Only run 'cargo fetch' at the top-level source directory.
+    # Walking all subdirectories causes failures when sub-crates have their own
+    # Cargo.toml but are not listed in the workspace manifest (e.g. py-cryptography
+    # docs/development sub-crates). Cargo resolves transitive deps from the root.
+    if os.path.exists(os.path.join(pkg.stage.source_path, "Cargo.toml")):
+        with working_dir(pkg.stage.source_path):
+            cargo_exe("fetch", env=env)

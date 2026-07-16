@@ -11,7 +11,7 @@ packages:
     - "cray-mpich@8.1.33"
   intel-oneapi-compilers:
     externals:
-    - spec: intel-oneapi-compilers@2024.2.0
+    - spec: intel-oneapi-compilers@2024.2.0 +fix_rt_linkage
       prefix: /nasa/intel/oneapi-test
       modules:
       - cray-libpals/1.7.1

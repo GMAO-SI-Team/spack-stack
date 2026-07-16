@@ -1,6 +1,6 @@
 # How to Build **spack-stack** at NAS on TOSS5
 
-This guide documents how to build **spack-stack** on NASA NAS TOSS5 systems. The previous install process used three stages across compute and login nodes, but recent testing shows installation can now be done directly on a compute node.
+This guide documents how to build **spack-stack** on NASA NAS TOSS5 systems. Use `util/gmao/batch_install.sh` for normal full-stack builds: it performs the internet-facing preparation on the login node and submits the offline install to PBS.
 
 ---
 
@@ -11,6 +11,7 @@ This guide documents how to build **spack-stack** on NASA NAS TOSS5 systems. The
 - [Clone spack-stack](#clone-spack-stack)
 - [Obtain an Interactive Compute Node](#obtain-an-interactive-compute-node)
 - [Setup spack-stack](#setup-spack-stack)
+- [Using batch_install.sh (recommended)](#using-batch_installsh-recommended)
 - [Create Environments](#create-environments)
   - [oneAPI - ifx Environment](#oneapi---ifx-environment)
   - [oneAPI - ifort Environment](#oneapi---ifort-environment)
@@ -87,6 +88,48 @@ Run on a **login node with internet**:
 cd spack-stack-2.1.0
 . setup.sh
 ```
+
+---
+
+## Using batch_install.sh (recommended)
+
+Run the script from a NAS TOSS5 login node. It creates and concretizes the environments, populates required mirrors on the login node, and—with `-s`—submits the install to a PBS compute node. The generated PBS job exports the shared Cargo mirror and sets `CARGO_NET_OFFLINE=true`, so Rust builds do not try to access the network.
+
+Start by checking the command that would run:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m build -H nas-toss5 -s -n
+```
+
+For a new environment, use `-u` once to populate the bootstrap, source, and Cargo mirrors before the offline build job starts:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m build -H nas-toss5 -s -u
+```
+
+For a failed build or a later retry, retain the environment with `-e` and normally omit `-u`:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m build -H nas-toss5 -s -e
+```
+
+After the build cache is populated, generate usable Tcl module files with the install mode:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m install -H nas-toss5 -s -e
+```
+
+Use `-C oneapi@=2024.2.0` or `-C oneapi@=2025.3.0` to work on only one compiler environment. `-o` (or `--concretize-only`) stops after concretization, and `--help` displays all accepted options.
+
+With `-s`, NAS TOSS5 requests one 240-task Turin PBS node for eight hours; the script caps each package build at 24 jobs and normally permits two independent package builds. If the filesystem reports `OSError: [Errno 37] No locks available`, an exclusive recovery job may use `-L` (or `--disable-locks`): it creates a job-local Spack configuration with locking disabled and serializes package builds. Do not use `-L` while any other process can modify the same install tree.
+
+The `-p`, `-q`, and `--constraint` options are Discover-specific and do not apply to NAS PBS jobs.
+
+---
+
+## Manual workflow (fallback)
+
+The sections below describe the older manual workflow. Prefer `batch_install.sh` above for full-stack builds, especially when Rust packages are present.
 
 ---
 

@@ -1,4 +1,4 @@
-Discover (Tier 1 / JCSDA)
+Discover (Tier 1 / GMAO SI Team)
 
 ---
 
@@ -12,6 +12,7 @@ Discover (Tier 1 / JCSDA)
   - [Roles and modes](#roles-and-modes)
   - [The -H flag](#the--h-flag)
   - [The -e flag](#the--e-flag)
+  - [The -L / --disable-locks flag](#the--l---disable-locks-flag)
   - [The -s flag](#the--s-flag)
   - [The -a flag](#the--a-flag)
   - [The -p, -q, and --constraint flags](#the--p--q-and---constraint-flags)
@@ -30,17 +31,16 @@ Discover (Tier 1 / JCSDA)
 
 ## Overview
 
-This configuration provides the Spack Stack setup for the Tier 1 JCSDA installation on the NASA Discover supercomputer. It is maintained under the JCSDA `/discover/swdev/` space.
+This configuration provides the Spack Stack setup for the Tier 1 GMAO SI Team installation on the NASA Discover supercomputer. It is maintained under the GMAO SI Team `/discover/nobackup/projects/gmao/SIteam/` space.
 
 The site builds the `unified-dev` environment template with the following compilers:
 
 - `gcc@=14.2.0`
+- `gcc@=15.2.0`
 - `oneapi@=2024.2.0`
 - `oneapi@=2025.3.0`
 
-Module files are managed with `lmod`. Shared caches are located under `/discover/swdev/jcsda/spack-stack/`.
-
-> **Note:** This site (`discover`) is distinct from the GMAO Tier 2 site (`discover-gmao`). The two sites use different cache locations, compiler sets, and environment templates. If you are doing GMAO-specific work, see `configs/sites/tier2/discover-gmao/README.md`.
+Module files are managed with `lmod`. Shared caches are located under `/discover/nobackup/projects/gmao/SIteam/spack-stack/`.
 
 ---
 
@@ -73,7 +73,7 @@ git clone --recurse-submodules https://github.com/GMAO-SI-Team/spack-stack.git -
 Activate the base spack-stack environment from the root of the repository:
 
 ```bash
-cd spack-stack-dev
+cd spack-stack-siteam
 . ./setup.sh
 ```
 
@@ -138,11 +138,28 @@ The `-e` flag tells the script to continue even if the environment directories a
 
 ---
 
+### The -L / --disable-locks flag
+
+The `-L` / `--disable-locks` flag creates a job-local Spack user configuration containing `config:locks:false`, so Spack's package workers inherit the setting without changing the environment YAML. It also sets `--concurrent-packages=1`. Per-package build parallelism is unchanged. Use it only to work around a filesystem lock failure such as `OSError: [Errno 37] No locks available`, and only when this is the sole process modifying the environment's install tree.
+
+For example, an exclusive SLURM job retry for the oneAPI 2024.2.0 build can use:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m build -H discover -s \
+  -C oneapi@=2024.2.0 -e -L
+```
+
+Do not use `-L` for normal shared-stack builds or when another Spack process might install, uninstall, or otherwise modify the same environment. Locks remain enabled by default.
+
+---
+
 ### The -s flag
 
-The `-s` flag submits the `spack install` step to the SLURM scheduler via `salloc` rather than running it directly in your current shell. This is strongly recommended for full stack builds on Discover:
+The `-s` flag submits the `spack install` step to the SLURM scheduler via `sbatch` rather than running it directly in your current shell. This is strongly recommended for full stack builds on Discover:
 
 - Allocates a single node with 120 tasks
+- Limits each Spack package build to 24 jobs; the full-node allocation provides isolation rather than maximum build parallelism
+- Uses `$TSE_TMPDIR` for disposable build, test, and temporary-cache data when available; installed prefixes and mirrors remain in project space
 - Targets Milan nodes (`--constraint=mil`) by default
 - Walltime: 8 hours
 - Output is redirected to `spack.<hostname>.<env_name>.log` in the current directory
@@ -165,7 +182,7 @@ When the account is `s1873`, the job defaults to `--partition=preops --qos=bench
 
 ### The -p, -q, and --constraint flags
 
-Override the SLURM partition, QOS, and node constraint independently. These options only apply to NCCS hosts (`discover`, `discover-gmao`).
+Override the SLURM partition, QOS, and node constraint independently:
 
 ```bash
 # Use a different partition
@@ -183,6 +200,8 @@ Override the SLURM partition, QOS, and node constraint independently. These opti
 
 `-p` and `-q` also accept long-option forms (`--partition=`, `--qos=`). `--constraint` has no short form because `-c` and `-C` are already in use.
 
+These flags override the site defaults regardless of the account. Useful when working under a non-`s1873` account that still has access to specific partitions, QOS levels, or node types.
+
 ---
 
 ### Typical workflow
@@ -197,7 +216,7 @@ On the very first run, use `-u` to populate the bootstrap, source, and cargo mir
 ./util/gmao/batch_install.sh -r dev -m build -H discover -s -u
 ```
 
-- `-u`: Builds and populates the bootstrap mirror, source cache, and cargo mirror under `/discover/swdev/jcsda/spack-stack/`. Only needed once (or when the caches need to be refreshed).
+- `-u`: Builds and populates the bootstrap mirror, source cache, and cargo mirror under `/discover/nobackup/projects/gmao/SIteam/spack-stack/`. Only needed once (or when the caches need to be refreshed).
 - `-s`: Submits the install step to SLURM.
 - No `-e` needed since the environment directories do not exist yet.
 
@@ -229,8 +248,8 @@ The script creates one environment per compiler under `envs/` (relative to the r
 
 | Mode | Environment names created |
 |---|---|
-| `build` | `ue-gcc-14.2.0-build`, `ue-oneapi-2024.2.0-build`, `ue-oneapi-2025.3.0-build` |
-| `install` | `ue-gcc-14.2.0`, `ue-oneapi-2024.2.0`, `ue-oneapi-2025.3.0` |
+| `build` | `ue-gcc-14.2.0-build`, `ue-gcc-15.2.0-build`, `ue-oneapi-2024.2.0-build`, `ue-oneapi-2025.3.0-build` |
+| `install` | `ue-gcc-14.2.0`, `ue-gcc-15.2.0`, `ue-oneapi-2024.2.0`, `ue-oneapi-2025.3.0` |
 
 The `ue-` prefix comes from the `unified-dev` template used by this site.
 
@@ -241,11 +260,11 @@ The `ue-` prefix comes from the `unified-dev` template used by this site.
 After the `install` step completes, point your shell to the generated module files:
 
 ```bash
-module use -a /path/to/spack-stack/envs/ue-gcc-14.2.0/install/modulefiles/Core
+module use -a /path/to/spack-stack-siteam/envs/ue-gcc-15.2.0/install/modulefiles/Core
 module load stack-gcc stack-openmpi
 ```
 
-Replace `ue-gcc-14.2.0` with the appropriate environment name for your compiler of choice.
+Replace `ue-gcc-15.2.0` with the appropriate environment name for your compiler of choice.
 
 ---
 
@@ -257,7 +276,7 @@ First, activate spack-stack (required for interactive Spack commands) and activa
 
 ```bash
 . ./setup.sh
-cd envs/ue-gcc-14.2.0
+cd envs/ue-gcc-15.2.0
 spack env activate -p .
 ```
 
@@ -349,7 +368,7 @@ spack buildcache push -u local-binary
 spack buildcache update-index local-binary
 ```
 
-> **Warning:** This writes to the default shared build cache at `/discover/swdev/jcsda/spack-stack/build-cache`. Only do this if you have write access and intend to publish the change.
+> **Warning:** This writes to the default shared build cache at `/discover/nobackup/projects/gmao/SIteam/spack-stack/build-cache`. Only do this if you have write access and intend to publish the change.
 
 ---
 
@@ -368,7 +387,7 @@ If a package needs a new version or checksum update (e.g., a new upstream releas
 3. Activate the relevant environment:
 
    ```bash
-   cd envs/ue-gcc-14.2.0
+   cd envs/ue-gcc-15.2.0
    spack env activate -p .
    ```
 
@@ -409,12 +428,13 @@ The following flags are less commonly used. The descriptions below reflect our b
 |---|---|
 | `-c BUILDCACHE_DIR` | Use a custom build cache directory. Required with `-r ops -m build` for operational partners who do not have write access to the shared mirrors. |
 | `-d ENV_DIRS` | Override the default environment directory (default: `envs/` in the repo root). |
-| `-C COMPILERS` | Comma-separated list of compilers to build (e.g., `gcc@=14.2.0,oneapi@=2025.3.0`). Overrides the site defaults. |
-| `-p` / `--partition` | Override the SLURM partition. Defaults to `preops` when account is `s1873`, otherwise unset. NCCS hosts only. |
-| `-q` / `--qos` | Override the SLURM QOS. Defaults to `benchmark` when account is `s1873`, otherwise unset. NCCS hosts only. |
-| `--constraint` | Override the SLURM node constraint. Defaults to `mil` (Milan nodes). No short form. NCCS hosts only. |
+| `-C COMPILERS` | Comma-separated list of compilers to build (e.g., `gcc@=15.2.0,oneapi@=2025.3.0`). Overrides the site defaults. |
+| `-p` / `--partition` | Override the SLURM partition. Defaults to `preops` when account is `s1873`, otherwise unset. |
+| `-q` / `--qos` | Override the SLURM QOS. Defaults to `benchmark` when account is `s1873`, otherwise unset. |
+| `--constraint` | Override the SLURM node constraint. Defaults to `mil` (Milan nodes). No short form (`-c`/`-C` are taken). |
 | `-t` | Run tests for specific third-party dependencies after installation. The list of packages to test is hardcoded in `batch_install.sh`. |
 | `-u` | Populate bootstrap, source, and cargo mirrors. Requires `-r dev -m build`. Only needed on first run or when refreshing caches. |
+| `-L` / `--disable-locks` | Disable Spack install locks and serialize package installs for an isolated recovery run only. Per-package build parallelism is unchanged. Requires assurance that no other process is modifying the same install tree. |
 
 ---
 

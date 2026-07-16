@@ -86,6 +86,8 @@ usage() {
   echo "          no short form available (-c and -C are already used);"
   echo "          NOTE: only applies to NCCS hosts (discover, discover-gmao)"
   echo "  -s  Submit 'spack install' to batch scheduler"
+  echo "  -L  Disable Spack install locks and serialize package installs; use only when this is the sole process modifying the install tree;"
+  echo "      also accepted as --disable-locks"
   echo "  -t  Run tests for specific thirdparty dependencies;"
   echo "      these are currently hardcoded in batch_install.sh"
   echo "  -o  Concretize-only: stop after concretization (do not install);"
@@ -97,7 +99,66 @@ usage() {
   echo
 }
 
-while getopts r:m:d:c:C:N:H:a:p:q:nouesth flag
+# Normalize long options before getopts processes the short options.
+normalized_args=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --concretize-only)
+      normalized_args+=("-o")
+      ;;
+    --disable-locks)
+      normalized_args+=("-L")
+      ;;
+    --partition=*)
+      normalized_args+=("-p" "${1#*=}")
+      ;;
+    --partition)
+      if [[ -z "${2:-}" ]]; then
+        echo "ERROR, --partition requires a value"
+        exit 1
+      fi
+      normalized_args+=("-p" "$2")
+      shift
+      ;;
+    --qos=*)
+      normalized_args+=("-q" "${1#*=}")
+      ;;
+    --qos)
+      if [[ -z "${2:-}" ]]; then
+        echo "ERROR, --qos requires a value"
+        exit 1
+      fi
+      normalized_args+=("-q" "$2")
+      shift
+      ;;
+    --constraint=*)
+      SPACK_STACK_SLURM_CONSTRAINT="${1#*=}"
+      ;;
+    --constraint)
+      if [[ -z "${2:-}" ]]; then
+        echo "ERROR, --constraint requires a value"
+        exit 1
+      fi
+      SPACK_STACK_SLURM_CONSTRAINT="$2"
+      shift
+      ;;
+    --help)
+      normalized_args+=("-h")
+      ;;
+    --*)
+      echo "ERROR, unknown argument: $1"
+      usage
+      exit 1
+      ;;
+    *)
+      normalized_args+=("$1")
+      ;;
+  esac
+  shift
+done
+set -- "${normalized_args[@]}"
+
+while getopts r:m:d:c:C:N:H:a:p:q:nouestLh flag
 do
   case "${flag}" in
     r)
@@ -145,6 +206,9 @@ do
     s)
       SPACK_STACK_SUBMIT_TO_SCHEDULER="true"
       ;;
+    L)
+      SPACK_STACK_DISABLE_LOCKS="true"
+      ;;
     t)
       SPACK_STACK_RUN_TESTS="true"
       ;;
@@ -156,42 +220,6 @@ do
 done
 shift $((OPTIND - 1))
 
-# Parse any remaining long options (e.g. --constraint, --partition, --qos)
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --concretize-only)
-      SPACK_STACK_CONCRETIZE_ONLY="true"
-      ;;
-    --constraint=*)
-      SPACK_STACK_SLURM_CONSTRAINT="${1#*=}"
-      ;;
-    --constraint)
-      SPACK_STACK_SLURM_CONSTRAINT="$2"
-      shift
-      ;;
-    --partition=*)
-      SPACK_STACK_SLURM_PARTITION="${1#*=}"
-      ;;
-    --partition)
-      SPACK_STACK_SLURM_PARTITION="$2"
-      shift
-      ;;
-    --qos=*)
-      SPACK_STACK_SLURM_QOS="${1#*=}"
-      ;;
-    --qos)
-      SPACK_STACK_SLURM_QOS="$2"
-      shift
-      ;;
-    *)
-      echo "ERROR, unknown argument: $1"
-      usage
-      exit 1
-      ;;
-  esac
-  shift
-done
-
 echo "INFO: $0 options:"
 echo "  SPACK_STACK_ROLE:                            ${SPACK_STACK_ROLE:-not set}"
 echo "  SPACK_STACK_MODE:                            ${SPACK_STACK_MODE:-not set}"
@@ -202,6 +230,7 @@ echo "  SPACK_STACK_DRY_RUN:                         ${SPACK_STACK_DRY_RUN:-fals
 echo "  SPACK_STACK_UPDATE_DEV_CACHES:               ${SPACK_STACK_UPDATE_DEV_CACHES:-false}"
 echo "  SPACK_STACK_IGNORE_ENV_EXIST:                ${SPACK_STACK_IGNORE_ENV_EXIST:-false}"
 echo "  SPACK_STACK_SUBMIT_TO_SCHEDULER:             ${SPACK_STACK_SUBMIT_TO_SCHEDULER:-false}"
+echo "  SPACK_STACK_DISABLE_LOCKS:                    ${SPACK_STACK_DISABLE_LOCKS:-false}"
 echo "  SPACK_STACK_RUN_TESTS:                       ${SPACK_STACK_RUN_TESTS:-false}"
 echo "  ACCOUNT:                                     ${ACCOUNT:-s1873 (default)}"
 echo "  SPACK_STACK_SLURM_PARTITION:                 ${SPACK_STACK_SLURM_PARTITION:-use site default}"
@@ -270,15 +299,14 @@ case ${SPACK_STACK_BATCH_HOST} in
     SPACK_STACK_ENVIRONMENT_DIRS=${SPACK_STACK_ENVIRONMENT_DIRS:-${PWD}/envs/toss5}
     ;;
   discover)
-    SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=14.2.0")
+    SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=14.2.0" "gcc@=15.2.0")
     SPACK_STACK_BATCH_TEMPLATES=("unified-dev")
     SPACK_STACK_MODULE_CHOICE="lmod"
-    SPACK_STACK_BOOTSTRAP_MIRROR="/discover/swdev/jcsda/spack-stack/bootstrap-mirror"
-    SPACK_STACK_CARGO_MIRROR="/discover/swdev/jcsda/spack-stack/cargo-mirror"
+    SPACK_STACK_BOOTSTRAP_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/bootstrap-mirror"
+    SPACK_STACK_CARGO_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/cargo-mirror"
     ;;
   discover-gmao)
     SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=15.2.0")
-    #SPACK_STACK_BATCH_TEMPLATES=("unified-dev")
     SPACK_STACK_BATCH_TEMPLATES=("geos-dev")
     SPACK_STACK_MODULE_CHOICE="lmod"
     SPACK_STACK_BOOTSTRAP_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/bootstrap-mirror"
@@ -479,13 +507,15 @@ function run_interactive_job() {
         slurm_qos=""
       fi
       slurm_log="${job_name}.log"
-      echo "INFO: salloc output redirected to ${slurm_log}"
-      salloc --nodes=1 --ntasks-per-node=${tpn} --time=${walltime} \
+      echo "INFO: sbatch output redirected to ${slurm_log}"
+      sbatch --wait \
+             --nodes=1 --ntasks-per-node=${tpn} --time=${walltime} \
              ${slurm_constraint} ${slurm_partition} ${slurm_qos} \
              --job-name=${job_name} \
-             --account=${ACCOUNT} bash ${script} \
-             > "${slurm_log}" 2>&1
-      echo "INFO: salloc job complete, log: ${slurm_log}"
+             --account=${ACCOUNT} \
+             --output="${slurm_log}" --error="${slurm_log}" \
+             ${script}
+      echo "INFO: sbatch job complete, log: ${slurm_log}"
       ;;
     discover-gmao)
       slurm_constraint="${SPACK_STACK_SLURM_CONSTRAINT:+--constraint=${SPACK_STACK_SLURM_CONSTRAINT}}"
@@ -505,13 +535,15 @@ function run_interactive_job() {
         slurm_qos=""
       fi
       slurm_log="${job_name}.log"
-      echo "INFO: salloc output redirected to ${slurm_log}"
-      salloc --nodes=1 --ntasks-per-node=${tpn} --time=${walltime} \
+      echo "INFO: sbatch output redirected to ${slurm_log}"
+      sbatch --wait \
+             --nodes=1 --ntasks-per-node=${tpn} --time=${walltime} \
              ${slurm_constraint} ${slurm_partition} ${slurm_qos} \
              --job-name=${job_name} \
-             --account=${ACCOUNT} bash ${script} \
-             > "${slurm_log}" 2>&1
-      echo "INFO: salloc job complete, log: ${slurm_log}"
+             --account=${ACCOUNT} \
+             --output="${slurm_log}" --error="${slurm_log}" \
+             ${script}
+      echo "INFO: sbatch job complete, log: ${slurm_log}"
       ;;
     *)
       echo "ERROR, run_interactive_job command not configured for ${host}"
@@ -605,6 +637,16 @@ else
   test_packages=()
 fi
 
+if [[ "${SPACK_STACK_DISABLE_LOCKS}" == "true" ]]; then
+  spack_install_lock_flag="--disable-locks"
+else
+  spack_install_lock_flag=""
+fi
+
+# A full node is allocated for isolation, but large package builds can slow down
+# when every hardware thread is used. Cap Spack's per-package build parallelism.
+spack_build_jobs=24
+
 # Loop through all compilers and templates for this host
 first_pass="true"
 for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
@@ -695,6 +737,12 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         fi
       fi
       echo "[DRY-RUN] spack env activate -p ${env_dir}"
+      if [[ "${SPACK_STACK_DISABLE_LOCKS}" == "true" ]]; then
+        echo "[DRY-RUN] generated batch script exports a job-local SPACK_USER_CONFIG_PATH with config:locks:false"
+      fi
+      if [[ "${submit_to_scheduler}" == "true" && ( "${host}" == "discover" || "${host}" == "discover-gmao" ) ]]; then
+        echo "[DRY-RUN] generated batch script uses project-space paths from site config.yaml for build, test, and cache stages"
+      fi
       if [[ "${host}" == "macos.gmao" && ! ${env_exists} == "true" ]]; then
         echo "[DRY-RUN] spack external find --not-buildable autoconf automake bash cmake cvs doxygen gawk git-lfs groff libtool ninja npm subversion swig texinfo"
         echo "[DRY-RUN] generating spack-macos-externals.yaml and applying with 'spack config add -f'"
@@ -705,7 +753,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
       fi
       echo "[DRY-RUN] spack bootstrap now"
       echo "[DRY-RUN] spack concretize --force --fresh"
-      echo "[DRY-RUN] ./util/show_duplicate_packages.py -i crtm -i crtm-fix -i esmf -i mapl -i neptune-env -i py-cython -i ip -i fms -i geos-gcm-env"
+      echo "[DRY-RUN] ./util/show_duplicate_packages.py -i crtm -i crtm-fix -i esmf -i mapl -i neptune-env -i py-cython -i ip -i fms -i geos-gcm-env -i py-versioneer"
 
       if [[ "${update_source_cache}" == "true"* ]]; then
         echo "[DRY-RUN] spack mirror create -a -d <source_mirror_path>"
@@ -719,13 +767,20 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
          [[ "${compiler_name}" == "oneapi" ]]; then
         echo "[DRY-RUN] # ectrans/ecbuild workaround (NAS oneapi only):"
         echo "[DRY-RUN] # See: https://github.com/JCSDA/spack-stack/issues/1775#issuecomment-3898802720"
-        echo "[DRY-RUN] spack install ecbuild"
+        echo "[DRY-RUN] spack ${spack_install_lock_flag} install ecbuild"
         echo "[DRY-RUN] ./util/gmao/patch_ecbuild_ectrans.py --patch \$(spack location -i ecbuild)/.../ecbuild_add_lang_flags.cmake"
-        echo "[DRY-RUN] spack install ectrans"
+        echo "[DRY-RUN] spack ${spack_install_lock_flag} install ectrans"
         echo "[DRY-RUN] ./util/gmao/patch_ecbuild_ectrans.py --revert \$(spack location -i ecbuild)/.../ecbuild_add_lang_flags.cmake"
       fi
 
       echo "[DRY-RUN] Generating spack-install.${env_name}.sh and executing via:"
+      echo "[DRY-RUN]   Generated install commands: spack ${spack_install_lock_flag} install ..."
+      if [[ "${submit_to_scheduler}" == "true" ]]; then
+        echo "[DRY-RUN]   Scheduled package builds use --jobs=${spack_build_jobs} (the SLURM allocation remains a full node)"
+      fi
+      if [[ "${SPACK_STACK_DISABLE_LOCKS}" == "true" && "${submit_to_scheduler}" == "true" ]]; then
+        echo "[DRY-RUN]   -L also adds --concurrent-packages=1"
+      fi
       if [[ "${submit_to_scheduler}" == "true" ]]; then
         tpn_dry=$(tasks_per_node ${host})
         case ${host} in
@@ -759,10 +814,13 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
             else
               slurm_extra_dry="(default partition/qos)"
             fi
-            echo "[DRY-RUN]   salloc --nodes=1 --ntasks-per-node=${tpn_dry} --time=08:00:00 \\"
+            echo "[DRY-RUN]   sbatch --wait \\"
+            echo "[DRY-RUN]          --nodes=1 --ntasks-per-node=${tpn_dry} --time=08:00:00 \\"
             echo "[DRY-RUN]          --constraint=mil ${slurm_extra_dry} \\"
             echo "[DRY-RUN]          --job-name=spack.${host}.${env_name} \\"
-            echo "[DRY-RUN]          --account=${ACCOUNT} bash spack-install.${env_name}.sh"
+            echo "[DRY-RUN]          --account=${ACCOUNT} \\"
+            echo "[DRY-RUN]          --output=spack.${host}.${env_name}.log --error=spack.${host}.${env_name}.log \\"
+            echo "[DRY-RUN]          spack-install.${env_name}.sh"
             ;;
           discover-gmao)
             if [[ "${ACCOUNT}" == "s1873" ]]; then
@@ -770,10 +828,13 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
             else
               slurm_extra_dry="(default partition/qos)"
             fi
-            echo "[DRY-RUN]   salloc --nodes=1 --ntasks-per-node=${tpn_dry} --time=08:00:00 \\"
+            echo "[DRY-RUN]   sbatch --wait \\"
+            echo "[DRY-RUN]          --nodes=1 --ntasks-per-node=${tpn_dry} --time=08:00:00 \\"
             echo "[DRY-RUN]          --constraint=mil ${slurm_extra_dry} \\"
             echo "[DRY-RUN]          --job-name=spack.${host}.${env_name} \\"
-            echo "[DRY-RUN]          --account=${ACCOUNT} bash spack-install.${env_name}.sh"
+            echo "[DRY-RUN]          --account=${ACCOUNT} \\"
+            echo "[DRY-RUN]          --output=spack.${host}.${env_name}.log --error=spack.${host}.${env_name}.log \\"
+            echo "[DRY-RUN]          spack-install.${env_name}.sh"
             ;;
           *)
             echo "[DRY-RUN]   run_interactive_job ${host} spack-install.${env_name}.sh ${reuse_build_cache}"
@@ -1044,8 +1105,10 @@ EOF
       exit 1
     fi
 
-    # Check for duplicate packages
-    ./util/show_duplicate_packages.py -i crtm -i crtm-fix -i esmf -i mapl -i neptune-env -i py-cython -i ip -i fms -i geos-gcm-env
+    # Check for duplicate packages. py-versioneer is intentionally duplicated:
+    # py-pyogrio requires 0.28 while py-partd (required by modern py-dask)
+    # requires 0.29; both are build-only dependencies.
+    ./util/show_duplicate_packages.py -i crtm -i crtm-fix -i esmf -i mapl -i neptune-env -i py-cython -i ip -i fms -i geos-gcm-env -i py-versioneer
 
     # Stop here if --concretize-only / -o was requested
     if [[ "${SPACK_STACK_CONCRETIZE_ONLY}" == "true"* ]]; then
@@ -1090,8 +1153,14 @@ EOF
 
     case ${submit_to_scheduler} in
       "true")
-        jobs=$(tasks_per_node ${host})
-        parallel_install_flags="--concurrent-packages=2 --jobs=${jobs}"
+        if [[ "${SPACK_STACK_DISABLE_LOCKS}" == "true" ]]; then
+          # --disable-locks is a command-line setting and is not inherited by
+          # the worker processes used for concurrent package installation.
+          # Keep installs serial when locks are disabled.
+          parallel_install_flags="--concurrent-packages=1 --jobs=${spack_build_jobs}"
+        else
+          parallel_install_flags="--concurrent-packages=2 --jobs=${spack_build_jobs}"
+        fi
         ;;
       "false")
         parallel_install_flags=""
@@ -1114,6 +1183,40 @@ EOF
 
 set -e
 
+# Initialize the module system (needed when running as a batch job via sbatch,
+# where lmod shell functions are not automatically available).
+if [[ -f /usr/share/lmod/lmod/init/bash ]]; then
+  source /usr/share/lmod/lmod/init/bash
+fi
+set +e
+module purge
+set -e
+
+# Point cargo at the local mirror so rust builds don't try to reach the internet.
+export CARGO_HOME=${cargo_mirror_path}
+export CARGO_NET_OFFLINE=true
+
+if [[ "${SPACK_STACK_DISABLE_LOCKS}" == "true" ]]; then
+  # Spack's package workers do not inherit command-line configuration or the
+  # environment's config scopes. Give every worker a private user config scope
+  # with locking disabled for this isolated recovery job only.
+  spack_lock_config_dir=\$(mktemp -d "\${TMPDIR:-/tmp}/spack-stack-lock-config.XXXXXX")
+  cat > "\${spack_lock_config_dir}/config.yaml" <<'LOCK_CONFIG_EOF'
+config:
+  locks: false
+LOCK_CONFIG_EOF
+  export SPACK_USER_CONFIG_PATH="\${spack_lock_config_dir}"
+  # setup.sh normally disables local configuration for reproducibility. The
+  # private scope above is intentionally the sole local configuration for -L.
+  unset SPACK_DISABLE_LOCAL_CONFIG
+  echo "INFO: -L using job-local config: \${spack_lock_config_dir}/config.yaml"
+fi
+
+# Build stages use the paths configured in the site config.yaml
+# (under /discover/nobackup/projects/gmao/SIteam/spack-stack/cache/).
+# TSE_TMPDIR is not used: its 200k inode quota is insufficient for large
+# packages like rustc which extract tens of thousands of files.
+
 $(declare -p test_packages)
 
 # Workaround for ectrans build failure with oneapi at NAS (nas/nas-toss5).
@@ -1127,11 +1230,11 @@ if [[ "${host}" == "nas" || "${host}" == "nas-toss5" ]] && \
    [[ "${compiler_name}" == "oneapi" ]]; then
   set -o pipefail
   echo "Installing ecbuild before ectrans workaround ..."
-  spack install --verbose ${buildcache_install_flags} ecbuild 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.ecbuild
+  spack ${spack_install_lock_flag} install --verbose ${buildcache_install_flags} ecbuild 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.ecbuild
   ecbuild_flags_cmake=\$(spack location -i ecbuild)/share/ecbuild/cmake/ecbuild_add_lang_flags.cmake
   echo "Applying ectrans/ecbuild workaround to \${ecbuild_flags_cmake} ..."
   ${SPACK_STACK_DIR}/util/gmao/patch_ecbuild_ectrans.py --patch \${ecbuild_flags_cmake}
-  spack install --verbose ${buildcache_install_flags} ectrans 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.ectrans
+  spack ${spack_install_lock_flag} install --verbose ${buildcache_install_flags} ectrans 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.ectrans
   set +o pipefail
   echo "Reverting ectrans/ecbuild workaround ..."
   ${SPACK_STACK_DIR}/util/gmao/patch_ecbuild_ectrans.py --revert \${ecbuild_flags_cmake}
@@ -1140,7 +1243,7 @@ fi
 # If no tests are required, install everything
 if [[ \${#test_packages[@]} -eq 0 ]]; then
   set -o pipefail
-  spack install --verbose ${buildcache_install_flags} ${parallel_install_flags} 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}
+  spack ${spack_install_lock_flag} install --verbose ${buildcache_install_flags} ${parallel_install_flags} 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}
   set +o pipefail
 else
   for (( idx=0; idx<\${#test_packages[@]}; idx++ )); do
@@ -1151,15 +1254,15 @@ else
     set -e
     idx_padded=\$(printf "%03d" "\$((idx+1))")
     set -o pipefail
-    spack install --verbose ${buildcache_install_flags} ${parallel_install_flags} --only=dependencies \${test_package} \\
+    spack ${spack_install_lock_flag} install --verbose ${buildcache_install_flags} ${parallel_install_flags} --only=dependencies \${test_package} \\
       2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.\${idx_padded}.\${test_package}-dependencies
-    spack install --verbose --no-cache --test=root \${test_package} 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.\${idx_padded}.\${test_package}
+    spack ${spack_install_lock_flag} install --verbose --no-cache --test=root \${test_package} 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.\${idx_padded}.\${test_package}
     set +o pipefail
   done
   # idx now equals the length of the array; install the rest
   idx_padded=\$(printf "%03d" "\$((idx+1))")
   set -o pipefail
-  spack install --verbose ${buildcache_install_flags} ${parallel_install_flags} 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.\${idx_padded}
+  spack ${spack_install_lock_flag} install --verbose ${buildcache_install_flags} ${parallel_install_flags} 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.\${idx_padded}
   set +o pipefail
 fi
 EOF
