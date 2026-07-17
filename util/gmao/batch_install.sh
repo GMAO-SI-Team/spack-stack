@@ -781,6 +781,10 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
       if [[ "${SPACK_STACK_DISABLE_LOCKS}" == "true" && "${submit_to_scheduler}" == "true" ]]; then
         echo "[DRY-RUN]   -L also adds --concurrent-packages=1"
       fi
+      if [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
+         [[ "${compiler}" == "oneapi@=2025.3.0" ]]; then
+        echo "[DRY-RUN]   Job preflight: module load comp/intel/2025.3.0 mpi/impi/2021.17"
+      fi
       if [[ "${submit_to_scheduler}" == "true" ]]; then
         tpn_dry=$(tasks_per_node ${host})
         case ${host} in
@@ -1216,6 +1220,15 @@ fi
 # (under /discover/nobackup/projects/gmao/SIteam/spack-stack/cache/).
 # TSE_TMPDIR is not used: its 200k inode quota is insufficient for large
 # packages like rustc which extract tens of thousands of files.
+
+# On Discover, the 2025.3 Intel MPI module is visible only after its compiler
+# module is loaded. Preload the pair in the batch shell so every Spack package
+# worker inherits a valid module hierarchy.
+if [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
+   [[ "${compiler}" == "oneapi@=2025.3.0" ]]; then
+  echo "INFO: preloading comp/intel/2025.3.0 and mpi/impi/2021.17"
+  module load comp/intel/2025.3.0 mpi/impi/2021.17
+fi
 
 $(declare -p test_packages)
 

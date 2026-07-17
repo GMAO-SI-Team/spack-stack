@@ -456,6 +456,10 @@ packages:
       - '@3:'
       prefer:
       - '~performance'
+    # 0.11.1 replaces the Versioneer-based build that breaks with Python 3.12+.
+    py-pandas-datareader:
+      require:
+      - '@0.11.1'
     # To avoid duplicate packages
     py-numpy:
       require:

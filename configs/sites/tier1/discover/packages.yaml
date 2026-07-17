@@ -3,6 +3,10 @@ packages:
   ewok-env:
     require:
     - '+ecflow'
+  # Completion-index generation can hang during isolated offline builds.
+  awscli-v2:
+    require:
+    - '~autocomplete'
   # Problems building shared hdf-eos2 with Intel, not needed
   hdf-eos2:
     variants: ~shared
