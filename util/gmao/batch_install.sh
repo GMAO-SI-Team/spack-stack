@@ -785,6 +785,10 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
          [[ "${compiler}" == "oneapi@=2025.3.0" ]]; then
         echo "[DRY-RUN]   Job preflight: module load comp/intel/2025.3.0 mpi/impi/2021.17"
       fi
+      if [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
+         [[ "${compiler}" == "gcc@=15.2.0" ]]; then
+        echo "[DRY-RUN]   Job preflight: module load comp/gcc/15.2.0 mpi/openmpi/5.0.10/gcc-15.2.0"
+      fi
       if [[ "${submit_to_scheduler}" == "true" ]]; then
         tpn_dry=$(tasks_per_node ${host})
         case ${host} in
@@ -1025,6 +1029,11 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
     fi
     spack env activate -p ${env_dir}
 
+    # Environment configuration can select a different miscellaneous-cache
+    # location. Clear it after activation so package and patch indexes reflect
+    # local recipe changes made since the environment was created.
+    spack clean -m
+
     if [[ "${host}" == "macos.gmao" && ! ${env_exists} == "true" ]]; then
       echo "Running spack external find for macOS generic packages..."
       # cmake is excluded here and injected manually below with ~doc to prevent
@@ -1228,6 +1237,10 @@ if [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
    [[ "${compiler}" == "oneapi@=2025.3.0" ]]; then
   echo "INFO: preloading comp/intel/2025.3.0 and mpi/impi/2021.17"
   module load comp/intel/2025.3.0 mpi/impi/2021.17
+elif [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
+     [[ "${compiler}" == "gcc@=15.2.0" ]]; then
+  echo "INFO: preloading comp/gcc/15.2.0 and mpi/openmpi/5.0.10/gcc-15.2.0"
+  module load comp/gcc/15.2.0 mpi/openmpi/5.0.10/gcc-15.2.0
 fi
 
 $(declare -p test_packages)
