@@ -25,6 +25,7 @@ packages:
     - spec: openmpi@5.0.10 ~cuda~cxx~cxx_exceptions~java~memchecker+pmi~static~wrapper-rpath+lustre~internal-hwloc+two_level_namespace fabrics=ucx schedulers=slurm %gcc@15.2.0
       prefix: /discover/swdev/gmao_SIteam/MPI/openmpi/5.0.10/gcc-15.2.0
       modules:
+      - comp/gcc/15.2.0
       - mpi/openmpi/5.0.10/gcc-15.2.0
       extra_attributes:
         environment:
