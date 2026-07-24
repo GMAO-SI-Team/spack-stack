@@ -50,6 +50,10 @@ class GeosGcmEnv(BundlePackage):
     depends_on("py-ruamel-yaml", type="run")
     depends_on("udunits", type="run")
 
+    # Needed for f2py
+    depends_on("meson", type="run")
+    depends_on("ninja", type="run")
+
     depends_on("perl", type="run")
 
     depends_on("py-cmocean", type="run")
