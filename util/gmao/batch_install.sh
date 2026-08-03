@@ -306,8 +306,8 @@ case ${SPACK_STACK_BATCH_HOST} in
     SPACK_STACK_CARGO_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/cargo-mirror"
     ;;
   discover-gmao)
-    SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=15.2.0")
-    SPACK_STACK_BATCH_TEMPLATES=("geos-dev")
+    SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=15.2.0" "nag@=7.2.7238")
+    SPACK_STACK_BATCH_TEMPLATES=("geos-dev" "geos-dev-nag")
     SPACK_STACK_MODULE_CHOICE="lmod"
     SPACK_STACK_BOOTSTRAP_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/bootstrap-mirror"
     SPACK_STACK_CARGO_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/cargo-mirror"
@@ -789,6 +789,10 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
          [[ "${compiler}" == "gcc@=15.2.0" ]]; then
         echo "[DRY-RUN]   Job preflight: module load comp/gcc/15.2.0 mpi/openmpi/5.0.10/gcc-15.2.0"
       fi
+      if [[ "${host}" == "discover-gmao" ]] && \
+         [[ "${compiler}" == "nag@=7.2.7238" ]]; then
+        echo "[DRY-RUN]   Job preflight: module load comp/gcc/12.3.0 comp/nag/7.2-7238 mpi/openmpi/4.1.6/nag_7.2.7238-gcc_12.3.0"
+      fi
       if [[ "${submit_to_scheduler}" == "true" ]]; then
         tpn_dry=$(tasks_per_node ${host})
         case ${host} in
@@ -1241,6 +1245,12 @@ elif [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
      [[ "${compiler}" == "gcc@=15.2.0" ]]; then
   echo "INFO: preloading comp/gcc/15.2.0 and mpi/openmpi/5.0.10/gcc-15.2.0"
   module load comp/gcc/15.2.0 mpi/openmpi/5.0.10/gcc-15.2.0
+elif [[ "${host}" == "discover-gmao" ]] && \
+     [[ "${compiler}" == "nag@=7.2.7238" ]]; then
+  # This external OpenMPI was built with GCC C/C++ and NAG Fortran. Lmod
+  # requires the two compiler modules before the compiler-specific MPI module.
+  echo "INFO: preloading comp/gcc/12.3.0, comp/nag/7.2-7238, and mpi/openmpi/4.1.6/nag_7.2.7238-gcc_12.3.0"
+  module load comp/gcc/12.3.0 comp/nag/7.2-7238 mpi/openmpi/4.1.6/nag_7.2.7238-gcc_12.3.0
 fi
 
 $(declare -p test_packages)
