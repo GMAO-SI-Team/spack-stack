@@ -8,7 +8,8 @@ packages:
   mpi:
     buildable: false
     require:
-    - "intel-oneapi-mpi@2021.13"
+    # Select mpiifort for the ifort compiler stack instead of the default mpiifx.
+    - "intel-oneapi-mpi@2021.13 +classic-names"
   intel-oneapi-compilers:
     buildable: false
     externals:
@@ -44,7 +45,7 @@ packages:
   intel-oneapi-mpi:
     buildable: false
     externals:
-    - spec: intel-oneapi-mpi@2021.13
+    - spec: intel-oneapi-mpi@2021.13 +classic-names
       prefix: /usr/local/intel/oneapi/2024
       modules:
       - mpi/impi/2021.13
