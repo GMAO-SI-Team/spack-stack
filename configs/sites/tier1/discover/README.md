@@ -159,7 +159,7 @@ The `-s` flag submits the `spack install` step to the SLURM scheduler via `sbatc
 
 - Allocates a single node with 120 tasks
 - Limits each Spack package build to 24 jobs; the full-node allocation provides isolation rather than maximum build parallelism
-- Uses `$TSE_TMPDIR` for disposable build, test, and temporary-cache data when available; installed prefixes and mirrors remain in project space
+- Does not use `$TSE_TMPDIR`: its inode quota is insufficient for large packages such as Rust; build stages remain in the site-configured project-space cache
 - Targets Milan nodes (`--constraint=mil`) by default
 - Walltime: 8 hours
 - Output is redirected to `spack.<hostname>.<env_name>.log` in the current directory

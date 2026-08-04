@@ -12,6 +12,7 @@ Discover GMAO
   - [Roles and modes](#roles-and-modes)
   - [The -H flag](#the--h-flag)
   - [The -e flag](#the--e-flag)
+  - [The -L / --disable-locks flag](#the--l---disable-locks-flag)
   - [The -s flag](#the--s-flag)
   - [The -a flag](#the--a-flag)
   - [The -p, -q, and --constraint flags](#the--p--q-and---constraint-flags)
@@ -37,6 +38,8 @@ The site builds the `geos-dev` environment template with the following compilers
 - `gcc@=15.2.0`
 - `oneapi@=2024.2.0`
 - `oneapi@=2025.3.0`
+
+It also builds the NAG-specific `geos-dev-nag` template with `nag@=7.2.7238`.
 
 Module files are managed with `lmod`. Shared caches are located under `/discover/nobackup/projects/gmao/SIteam/spack-stack/`.
 
@@ -136,12 +139,29 @@ The `-e` flag tells the script to continue even if the environment directories a
 
 ---
 
+### The -L / --disable-locks flag
+
+The `-L` / `--disable-locks` flag creates a job-local Spack user configuration containing `config:locks:false`, so Spack's package workers inherit the setting without changing the environment YAML. It also sets `--concurrent-packages=1`. Per-package build parallelism is unchanged. Use it only to work around a filesystem lock failure such as `OSError: [Errno 37] No locks available`, and only when this is the sole process modifying the environment's install tree.
+
+For example, an exclusive retry can use:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m build -H discover-gmao -s \
+  -C oneapi@=2024.2.0 -e -L
+```
+
+Do not use `-L` for normal shared-stack builds or when another Spack process might install, uninstall, or otherwise modify the same environment. Locks remain enabled by default.
+
+---
+
 ### The -s flag
 
-The `-s` flag submits the `spack install` step to the SLURM scheduler via `salloc` rather than running it directly in your current shell. This is strongly recommended for full stack builds on Discover:
+The `-s` flag submits the `spack install` step to the SLURM scheduler via `sbatch` rather than running it directly in your current shell. This is strongly recommended for full stack builds on Discover:
 
 - Allocates a single node with 120 tasks
-- Targets Milan nodes (`--constraint=mil`)
+- Limits each Spack package build to 24 jobs; the full-node allocation provides isolation rather than maximum build parallelism
+- Does not use `$TSE_TMPDIR`: its inode quota is insufficient for large packages such as Rust; build stages remain in the site-configured project-space cache
+- Targets Milan nodes (`--constraint=mil`) by default
 - Walltime: 8 hours
 - Output is redirected to `spack.<hostname>.<env_name>.log` in the current directory
 
@@ -229,8 +249,8 @@ The script creates one environment per compiler under `envs/` (relative to the r
 
 | Mode | Environment names created |
 |---|---|
-| `build` | `ge-gcc-15.2.0-build`, `ge-oneapi-2024.2.0-build`, `ge-oneapi-2025.3.0-build` |
-| `install` | `ge-gcc-15.2.0`, `ge-oneapi-2024.2.0`, `ge-oneapi-2025.3.0` |
+| `build` | `ge-gcc-15.2.0-build`, `ge-oneapi-2024.2.0-build`, `ge-oneapi-2025.3.0-build`, `ge-nag-7.2.7238-build` |
+| `install` | `ge-gcc-15.2.0`, `ge-oneapi-2024.2.0`, `ge-oneapi-2025.3.0`, `ge-nag-7.2.7238` |
 
 ---
 
@@ -411,6 +431,8 @@ The following flags are less commonly used. The descriptions below reflect our b
 | `-p` / `--partition` | Override the SLURM partition. Defaults to `preops` when account is `s1873`, otherwise unset. |
 | `-q` / `--qos` | Override the SLURM QOS. Defaults to `benchmark` when account is `s1873`, otherwise unset. |
 | `--constraint` | Override the SLURM node constraint. Defaults to `mil` (Milan nodes). No short form (`-c`/`-C` are taken). |
+| `-L` / `--disable-locks` | Disable Spack install locks and serialize package installs. Use only for an exclusive recovery job after a filesystem lock failure. |
+| `-o` / `--concretize-only` | Concretize environments and stop before installation. |
 | `-t` | Run tests for specific third-party dependencies after installation. The list of packages to test is hardcoded in `batch_install.sh`. |
 | `-u` | Populate bootstrap, source, and cargo mirrors. Requires `-r dev -m build`. Only needed on first run or when refreshing caches. |
 

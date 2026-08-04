@@ -208,7 +208,7 @@ export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
 ../../util/fetch_cargo_deps.py
 ```
 
-> ⚠️ **Set `CARGO_HOME` on compute nodes** before running `spack install`.
+> ⚠️ **Set `CARGO_HOME` and `CARGO_NET_OFFLINE=true` on compute nodes** before running `spack install`.
 
 ---
 
@@ -218,6 +218,7 @@ Run installation on a **compute node**:
 
 ```bash
 export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export CARGO_NET_OFFLINE=true
 spack install -j 16 --verbose --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install ; bell
 ```
 
@@ -273,6 +274,7 @@ Typical commands were:
 ```bash
 # Step 1 (compute node)
 export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export CARGO_NET_OFFLINE=true
 spack install -j 16 --verbose --fail-fast --show-log-on-error --no-check-signature \
   --only dependencies py-cryptography py-maturin py-rpds-py ecflow 2>&1 | tee log.install.deps-for-rust-and-ecflow ; bell
 
@@ -283,6 +285,7 @@ spack install -j 2 -p 1 --verbose --fail-fast --show-log-on-error --no-check-sig
 
 # Step 3 (compute node)
 export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export CARGO_NET_OFFLINE=true
 spack install -j 16 --verbose --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install.after-cargo ; bell
 ```
 
