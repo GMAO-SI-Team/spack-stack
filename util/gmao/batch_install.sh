@@ -291,7 +291,7 @@ case ${SPACK_STACK_BATCH_HOST} in
     SPACK_STACK_ENVIRONMENT_DIRS=${SPACK_STACK_ENVIRONMENT_DIRS:-${PWD}/envs/toss4}
     ;;
   nas-toss5)
-    SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=14.2.1")
+    SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=15.3.0")
     SPACK_STACK_BATCH_TEMPLATES=("unified-dev")
     SPACK_STACK_MODULE_CHOICE="tcl"
     SPACK_STACK_BOOTSTRAP_MIRROR="/swbuild/gmao_SIteam/spack-stack/bootstrap-mirror-toss5"
@@ -881,33 +881,22 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
     # Reset environment
     echo "Resetting environment ..."
     case ${host} in
-      atlantis)
-        umask 0022
-        module purge
-        case ${compiler} in
-          clang@=22.1.0)
-            module use /gpfs/neptune/spack-stack/llvm-22.1.0/modulefiles
-            module use /gpfs/neptune/spack-stack/openmpi-4.1.8/llvm-22.1.0/modulefiles
-            ;;
-          gcc@=13.4.0)
-            module use /gpfs/neptune/spack-stack/gcc-13.4.0/modulefiles
-            module use /gpfs/neptune/spack-stack/openmpi-4.1.8/gcc-13.4.0/modulefiles
-            ;;
-          oneapi@=2025.3.0)
-            module use /gpfs/neptune/spack-stack/oneapi-2025.3.0/modulefiles
-            ;;
-        esac
-        ;;
       nas)
         umask 0022
         set +e
         module purge
+        module use /nasa/modulefiles/toss4
+        module use /nobackup/gmao_SIteam/modulefiles
+        module use /nasa/modulefiles/testing
         set -e
         ;;
       nas-toss5)
         umask 0022
         set +e
         module purge
+        module use /opt/cray/pe/modulefiles
+        module use /nasa/modulefiles/toss5_crayex
+        module use /nobackup/gmao_SIteam/modulefiles-TOSS5
         set -e
         ;;
       discover)
