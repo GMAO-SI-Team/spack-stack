@@ -36,6 +36,10 @@ packages:
       - craype-x86-turin
       - craype-network-ofi
       - cray-dsmml/0.3.1
+      # This site module sets the MPICH wrapper compilers and requires PrgEnv-gnu.
+      # Spack may activate this MPI external without first activating the GCC external.
+      - PrgEnv-gnu/8.6.0
+      - comp-gcc/15.3.0
       - cray-mpich/8.1.33
       - mpi/mpich-gfortran
       extra_attributes:
