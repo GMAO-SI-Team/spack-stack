@@ -206,11 +206,11 @@ spack mirror create -a -d /swbuild/gmao_SIteam/spack-stack/source-cache
 Rust packages frequently require network access during build. Pre-fetch their dependencies:
 
 ```bash
-export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export SPACK_CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
 ../../util/fetch_cargo_deps.py
 ```
 
-> ⚠️ **Set `CARGO_HOME` and `CARGO_NET_OFFLINE=true` on compute nodes** before running `spack install`.
+> ⚠️ **Set `SPACK_CARGO_HOME` and `CARGO_NET_OFFLINE=true` on compute nodes** before running `spack install`.
 
 ---
 
@@ -219,7 +219,7 @@ export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
 Run installation on a **compute node**:
 
 ```bash
-export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export SPACK_CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
 export CARGO_NET_OFFLINE=true
 spack install -j 16 --verbose --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install ; bell
 ```
@@ -275,18 +275,18 @@ Typical commands were:
 
 ```bash
 # Step 1 (compute node)
-export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export SPACK_CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
 export CARGO_NET_OFFLINE=true
 spack install -j 16 --verbose --fail-fast --show-log-on-error --no-check-signature \
   --only dependencies py-cryptography py-maturin py-rpds-py ecflow 2>&1 | tee log.install.deps-for-rust-and-ecflow ; bell
 
 # Step 2 (afe login node)
-export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export SPACK_CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
 spack install -j 2 -p 1 --verbose --fail-fast --show-log-on-error --no-check-signature \
   py-cryptography py-maturin py-rpds-py ecflow 2>&1 | tee log.install.rust-and-ecflow ; bell
 
 # Step 3 (compute node)
-export CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
+export SPACK_CARGO_HOME=/swbuild/gmao_SIteam/spack-stack/cargo-mirror
 export CARGO_NET_OFFLINE=true
 spack install -j 16 --verbose --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install.after-cargo ; bell
 ```

@@ -241,18 +241,18 @@ spack mirror create -a -d $HOME/spack-stack-mirrors/spack-source-mirror
 Rust packages frequently require network access during the build. Pre-fetch their dependencies to the cargo mirror:
 
 ```bash
-export CARGO_HOME=$HOME/spack-stack-mirrors/spack-cargo-mirror
+export SPACK_CARGO_HOME=$HOME/spack-stack-mirrors/spack-cargo-mirror
 ../../util/fetch_cargo_deps.py
 ```
 
-> ⚠️ **Set `CARGO_HOME` in your environment before running `spack install`.**
+> ⚠️ **Set `SPACK_CARGO_HOME` in your environment before running `spack install`.**
 
 ---
 
 ### Install Packages
 
 ```bash
-export CARGO_HOME=$HOME/spack-stack-mirrors/spack-cargo-mirror
+export SPACK_CARGO_HOME=$HOME/spack-stack-mirrors/spack-cargo-mirror
 spack install -j 6 --verbose --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install ; bell
 ```
 

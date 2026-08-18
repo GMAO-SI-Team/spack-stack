@@ -571,7 +571,7 @@ host=${SPACK_STACK_BATCH_HOST}
 module_choice=${SPACK_STACK_MODULE_CHOICE}
 bootstrap_mirror_path=${SPACK_STACK_BOOTSTRAP_MIRROR}
 cargo_mirror_path=${SPACK_STACK_CARGO_MIRROR}
-export CARGO_HOME=${cargo_mirror_path}
+export SPACK_CARGO_HOME=${cargo_mirror_path}
 
 if [[ -z ${SPACK_STACK_ENVIRONMENT_DIRS} ]]; then
   environment_dirs=${PWD}/envs
@@ -1199,7 +1199,7 @@ module purge
 set -e
 
 # Point cargo at the local mirror so rust builds don't try to reach the internet.
-export CARGO_HOME=${cargo_mirror_path}
+export SPACK_CARGO_HOME=${cargo_mirror_path}
 export CARGO_NET_OFFLINE=true
 
 if [[ "${SPACK_STACK_DISABLE_LOCKS}" == "true" ]]; then

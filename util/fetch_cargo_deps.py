@@ -1,8 +1,8 @@
 #!/usr/bin/env spack-python
 #
 # Run this script in an active, concretized Spack environment to fetch Rust
-# dependencies and store them in $CARGO_HOME. You must either run it with
-# 'spack-python' or have 'spack-python' in your $PATH. Ensure $CARGO_HOME has
+# dependencies and store them in $SPACK_CARGO_HOME. You must either run it with
+# 'spack-python' or have 'spack-python' in your $PATH. Ensure $SPACK_CARGO_HOME has
 # the same value when 'spack install' is run.
 #
 # For each spec that is a CargoPackage or a PythonPackage with a rust dependency,
@@ -41,14 +41,14 @@ spack_stack_dir = os.getenv("SPACK_STACK_DIR")
 if not spack_stack_dir:
     raise SpackError("SPACK_STACK_DIR must be set")
 
-cargo_home = os.getenv("CARGO_HOME")
+cargo_home = os.getenv("SPACK_CARGO_HOME")
 if not cargo_home:
-    raise SpackError("CARGO_HOME must be set")
+    raise SpackError("SPACK_CARGO_HOME must be set")
 if not os.path.isdir(cargo_home):
     os.makedirs(cargo_home)
 
 # Find each spec that is a CargoPackage or a PythonPackage with a
-# rust/rust-bootstrap dependency and fetch its dependencies to $CARGO_HOME
+# rust/rust-bootstrap dependency and fetch its dependencies to $SPACK_CARGO_HOME
 for spec in env.all_specs():
     if not spec.concrete:
         continue
