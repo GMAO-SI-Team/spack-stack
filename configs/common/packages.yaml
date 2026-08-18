@@ -365,9 +365,10 @@ packages:
       - '@2.6.2'
       - +pnetcdf
     # DH* CAN WE UPDATE? NEED A NEW SHARED-INTEL PATCH?
+    # MAT Upping to 1.14.1 for a fix for GCC 15
     parallel-netcdf:
       require:
-      - '@1.12.3'
+      - '@1.14.1'
     pflogger:
       require:
       - +mpi
