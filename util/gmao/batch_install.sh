@@ -52,18 +52,19 @@ check_macos_prerequisites() {
 usage() {
   set +x
   echo
-  echo "Usage: $0 -r <ROLE> -m <MODE> [-d <ENV_DIRS>] [-c <BUILDCACHE_DIR>] [-H <HOSTNAME>]"
+  echo "Usage: $0 [-r <ROLE>] -m <MODE> [-d <ENV_DIRS>] [-c <BUILDCACHE_DIR>] [-H <HOSTNAME>]"
   echo
-  echo "  -r  Set role, can be 'ops' or 'dev'"
-  echo "  -m  Set mode, can be 'build' or 'install';"
+  echo "  -r  Set role, can be 'ops' or 'dev'; required except with -m local"
+  echo "  -m  Set mode, can be 'build', 'install', or 'local';"
   echo "      build: build environments and update build caches;"
-  echo "      install: install environments using build caches"
+  echo "      install: install environments using build caches;"
+  echo "      local: one-step, per-machine install (macos.gmao only)"
   echo "  -d  Build or install environments in ENV_DIRS;"
   echo "      if not set, the default location is used"
   echo "  -c  Provide location of build caches as BUILDCACHE_DIR;"
   echo "      if not set, authoritative build caches are used"
   echo "  -u  Flag to update bootstrap and source caches;"
-  echo "      requires role 'dev' and mode 'build'"
+  echo "      requires role 'dev' and mode 'build', or mode 'local'"
   echo "  -e  Continue builds/install in existing environments;"
   echo "      by default, exit with an error if already exist"
   echo "  -C  Set a comma-separated list of compilers to use (e.g. gcc@=15.3.0,nag@=7.2.7243);"
@@ -240,19 +241,19 @@ echo "  SPACK_STACK_SLURM_CONSTRAINT:                ${SPACK_STACK_SLURM_CONSTRA
 # Set default account if not provided via -a or environment
 ACCOUNT=${ACCOUNT:-s1873}
 
-if [[ -z ${SPACK_STACK_ROLE} ]]; then
-  echo "ERROR, SPACK_STACK_ROLE not defined. Provide -r ROLE as argument"
-  exit 1
-elif [[ ! ${SPACK_STACK_ROLE} == "dev" && ! ${SPACK_STACK_ROLE} == "ops" ]]; then
-  echo "ERROR, invalid role '${SPACK_STACK_ROLE}'"
-  exit 1
-fi
-
 if [[ -z ${SPACK_STACK_MODE} ]]; then
   echo "ERROR, SPACK_STACK_MODE not defined. Provide -m MODE as argument"
   exit 1
-elif [[ ! ${SPACK_STACK_MODE} == "build" && ! ${SPACK_STACK_MODE} == "install" ]]; then
+elif [[ ! ${SPACK_STACK_MODE} == "build" && ! ${SPACK_STACK_MODE} == "install" && ! ${SPACK_STACK_MODE} == "local" ]]; then
   echo "ERROR, invalid mode '${SPACK_STACK_MODE}'"
+  exit 1
+fi
+
+if [[ "${SPACK_STACK_MODE}" != "local" && -z ${SPACK_STACK_ROLE} ]]; then
+  echo "ERROR, SPACK_STACK_ROLE not defined. Provide -r ROLE as argument"
+  exit 1
+elif [[ -n ${SPACK_STACK_ROLE} && ! ${SPACK_STACK_ROLE} == "dev" && ! ${SPACK_STACK_ROLE} == "ops" ]]; then
+  echo "ERROR, invalid role '${SPACK_STACK_ROLE}'"
   exit 1
 fi
 
@@ -263,10 +264,12 @@ if [[ ${SPACK_STACK_ROLE} == "ops" && ${SPACK_STACK_MODE} == "build" && -z ${SPA
   exit 1
 fi
 
-# Updating bootstrap and source caches requires role dev and mode build
+# Updating shared-site bootstrap and source caches requires role dev and mode build.
+# Local macOS mirrors are private to the machine, so local mode needs no role.
 if [[ ${SPACK_STACK_UPDATE_DEV_CACHES} == "true" ]]; then
-  if [[ ! ${SPACK_STACK_ROLE} == "dev" || ! ${SPACK_STACK_MODE} == "build" ]]; then
-    echo "ERROR, SPACK_STACK_UPDATE_DEV_CACHES requires role 'dev' and mode 'build'"
+  if [[ "${SPACK_STACK_MODE}" != "local" && \
+        ( ! ${SPACK_STACK_ROLE} == "dev" || ! ${SPACK_STACK_MODE} == "build" ) ]]; then
+    echo "ERROR, SPACK_STACK_UPDATE_DEV_CACHES requires role 'dev' and mode 'build', or mode 'local'"
     exit 1
   fi
 fi
@@ -353,6 +356,16 @@ case ${SPACK_STACK_BATCH_HOST} in
     exit 1
     ;;
 esac
+
+if [[ "${SPACK_STACK_MODE}" == "local" && "${SPACK_STACK_BATCH_HOST}" != "macos.gmao" ]]; then
+  echo "ERROR, mode 'local' is supported only for host macos.gmao"
+  exit 1
+fi
+
+if [[ "${SPACK_STACK_MODE}" == "local" && "${SPACK_STACK_SUBMIT_TO_SCHEDULER}" == "true" ]]; then
+  echo "ERROR, mode 'local' cannot be submitted to a batch scheduler"
+  exit 1
+fi
 
 # Apply -C compiler override for all hosts (not just macos.gmao)
 if [[ -n "${SPACK_STACK_COMPILER_OPT}" ]]; then
@@ -617,6 +630,21 @@ elif [[ "${SPACK_STACK_MODE}" == "build" ]]; then
     exit 1
   fi
   update_build_cache="true"
+  reuse_build_cache="true"
+elif [[ "${SPACK_STACK_MODE}" == "local" ]]; then
+  # A macOS stack is private to one workstation. Prepare its local source,
+  # bootstrap, and Cargo mirrors when requested, but install directly into the
+  # final environment and generate modules instead of publishing a buildcache.
+  if [[ ${SPACK_STACK_UPDATE_DEV_CACHES} == "true" ]]; then
+    update_bootstrap_mirror="true"
+    update_cargo_mirror="true"
+    update_source_cache="true"
+  else
+    update_bootstrap_mirror="false"
+    update_cargo_mirror="false"
+    update_source_cache="false"
+  fi
+  update_build_cache="false"
   reuse_build_cache="true"
 else
   echo "ERROR, invalid mode ${SPACK_STACK_MODE}"
