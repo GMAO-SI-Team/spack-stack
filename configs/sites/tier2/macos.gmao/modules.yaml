@@ -27,6 +27,25 @@ modules:
           set:
             'TMPDIR': '/tmp'
             'OMPI_MCA_btl': '^tcp'
+      # Homebrew-backed modules add the entire Homebrew bin directory to PATH.
+      # Keep the external compiler and tool settings, but do not let them
+      # override the Spack Python selected by the loaded Python modules.
+      gcc:
+        filter:
+          exclude_env_vars:
+          - PATH
+      cmake:
+        filter:
+          exclude_env_vars:
+          - PATH
+      ninja:
+        filter:
+          exclude_env_vars:
+          - PATH
+      wget:
+        filter:
+          exclude_env_vars:
+          - PATH
       all:
         filter:
           exclude_env_vars:
