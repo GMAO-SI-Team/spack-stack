@@ -364,8 +364,8 @@ packages:
       require:
       - '@2.6.2'
       - +pnetcdf
-    # DH* CAN WE UPDATE? NEED A NEW SHARED-INTEL PATCH?
-    # MAT Upping to 1.14.1 for a fix for GCC 15
+    # 1.14.1 fixes a GCC 15 build failure. The old oneAPI shared-intel
+    # linkage workaround applied only to 1.12.3 and is intentionally not used.
     parallel-netcdf:
       require:
       - '@1.14.1'
