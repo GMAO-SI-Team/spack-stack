@@ -475,6 +475,7 @@ function run_interactive_job() {
       echo "  Login node: ${login_node}, PBS model: ${pbs_model}"
        qsub -V \
            -l select=1:ncpus=${tpn}:mpiprocs=${tpn}:model=${pbs_model} \
+           -q normal \
            -l walltime=${walltime} \
            -l site=needed=/home3+/nobackupp18+/nobackupp28+/vast_swbuild/swbuild4 \
            -W group_list=${ACCOUNT} \
@@ -833,7 +834,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
             esac
             echo "[DRY-RUN]   qsub -V \\"
             echo "[DRY-RUN]        -l select=1:ncpus=${tpn_dry}:mpiprocs=${tpn_dry}:model=${pbs_model_dry} \\"
-            echo "[DRY-RUN]        -l walltime=08:00:00 \\"
+            echo "[DRY-RUN]        -q normal -l walltime=08:00:00 \\"
             echo "[DRY-RUN]        -l site=needed=/home3+/nobackupp18+/nobackupp28+/vast_swbuild/swbuild4 \\"
             echo "[DRY-RUN]        -W group_list=${ACCOUNT} -W block=true -W umask=0022 \\"
             echo "[DRY-RUN]        -j oe -k oed -N spack.${host}.${env_name} \\"

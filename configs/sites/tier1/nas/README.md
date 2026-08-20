@@ -73,7 +73,7 @@ git clone --recurse-submodules https://github.com/JCSDA/spack-stack.git -b spack
 NAS login nodes allow only **2 processes**, so use:
 
 ```bash
-qsub -I -V -X -l select=1:ncpus=128:mpiprocs=128:model=mil_ait -l walltime=12:00:00 -W group_list=s1873 -m b -N Interactive
+qsub -I -V -X -l select=1:ncpus=128:mpiprocs=128:model=mil_ait -q normal -l walltime=12:00:00 -W group_list=s1873 -m b -N Interactive
 ```
 
 This gives a **Milan** compute node for up to 12 hours.
