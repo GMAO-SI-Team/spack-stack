@@ -723,6 +723,10 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
     env_name=${env_name_prefix}-${compiler_name}-${compiler_version}
     [[ "${update_build_cache}" == "true" ]] && env_name=${env_name}-build
     env_dir=${environment_dirs}/${env_name}
+    # Different sites can legitimately build an identically named environment
+    # at the same time (for example NAS TOSS4 and TOSS5). Keep the generated
+    # job scripts distinct as well, since they share this working directory.
+    install_script_name=spack-install.${host}.${env_name}.sh
 
     # Reset env_exists for this specific environment target
     env_exists="false"
@@ -802,7 +806,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         echo "[DRY-RUN] ./util/gmao/patch_ecbuild_ectrans.py --revert \$(spack location -i ecbuild)/.../ecbuild_add_lang_flags.cmake"
       fi
 
-      echo "[DRY-RUN] Generating spack-install.${env_name}.sh and executing via:"
+      echo "[DRY-RUN] Generating ${install_script_name} and executing via:"
       echo "[DRY-RUN]   Generated install commands: spack ${spack_install_lock_flag} install ..."
       if [[ "${submit_to_scheduler}" == "true" ]]; then
         echo "[DRY-RUN]   Scheduled package builds use --jobs=${spack_build_jobs} (the SLURM allocation remains a full node)"
@@ -838,7 +842,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
             echo "[DRY-RUN]        -l site=needed=/home3+/nobackupp18+/nobackupp28+/vast_swbuild/swbuild4 \\"
             echo "[DRY-RUN]        -W group_list=${ACCOUNT} -W block=true -W umask=0022 \\"
             echo "[DRY-RUN]        -j oe -k oed -N spack.${host}.${env_name} \\"
-            echo "[DRY-RUN]        spack-install.${env_name}.sh"
+            echo "[DRY-RUN]        ${install_script_name}"
             ;;
           nas-toss5)
             echo "[DRY-RUN]   qsub -V \\"
@@ -847,7 +851,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
             echo "[DRY-RUN]        -l site=needed=/home3+/nobackupp18+/nobackupp28+/vast_swbuild/swbuild4 \\"
             echo "[DRY-RUN]        -W group_list=${ACCOUNT} -W block=true -W umask=0022 \\"
             echo "[DRY-RUN]        -j oe -k oed -N spack.${host}.${env_name} \\"
-            echo "[DRY-RUN]        spack-install.${env_name}.sh"
+            echo "[DRY-RUN]        ${install_script_name}"
             ;;
           discover)
             if [[ "${ACCOUNT}" == "s1873" ]]; then
@@ -861,7 +865,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
             echo "[DRY-RUN]          --job-name=spack.${host}.${env_name} \\"
             echo "[DRY-RUN]          --account=${ACCOUNT} \\"
             echo "[DRY-RUN]          --output=spack.${host}.${env_name}.log --error=spack.${host}.${env_name}.log \\"
-            echo "[DRY-RUN]          spack-install.${env_name}.sh"
+            echo "[DRY-RUN]          ${install_script_name}"
             ;;
           discover-gmao)
             if [[ "${ACCOUNT}" == "s1873" ]]; then
@@ -875,14 +879,14 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
             echo "[DRY-RUN]          --job-name=spack.${host}.${env_name} \\"
             echo "[DRY-RUN]          --account=${ACCOUNT} \\"
             echo "[DRY-RUN]          --output=spack.${host}.${env_name}.log --error=spack.${host}.${env_name}.log \\"
-            echo "[DRY-RUN]          spack-install.${env_name}.sh"
+            echo "[DRY-RUN]          ${install_script_name}"
             ;;
           *)
-            echo "[DRY-RUN]   run_interactive_job ${host} spack-install.${env_name}.sh ${reuse_build_cache}"
+            echo "[DRY-RUN]   run_interactive_job ${host} ${install_script_name} ${reuse_build_cache}"
             ;;
         esac
       else
-        echo "[DRY-RUN]   bash spack-install.${env_name}.sh"
+        echo "[DRY-RUN]   bash ${install_script_name}"
       fi
 
       if [[ "${update_build_cache}" == "true" ]]; then
@@ -1206,7 +1210,7 @@ EOF
         ;;
     esac
 
-    install_script=${PWD}/spack-install.${env_name}.sh
+    install_script=${PWD}/${install_script_name}
 
     # Locally ignore the generated install script in git without changing global .gitignore
     if [[ -d "${SPACK_STACK_DIR}/.git" ]] && ! grep -q "^spack-install\.\*\.sh$" "${SPACK_STACK_DIR}/.git/info/exclude" 2>/dev/null; then
