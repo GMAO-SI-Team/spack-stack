@@ -58,7 +58,7 @@ usage() {
   echo "  -m  Set mode, can be 'build', 'install', or 'local';"
   echo "      build: build environments and update build caches;"
   echo "      install: install environments using build caches;"
-  echo "      local: one-step, per-machine install (macos.gmao only)"
+  echo "      local: one-step, per-machine install (macos.gmao and bucy)"
   echo "  -d  Build or install environments in ENV_DIRS;"
   echo "      if not set, the default location is used"
   echo "  -c  Provide location of build caches as BUILDCACHE_DIR;"
@@ -265,7 +265,7 @@ if [[ ${SPACK_STACK_ROLE} == "ops" && ${SPACK_STACK_MODE} == "build" && -z ${SPA
 fi
 
 # Updating shared-site bootstrap and source caches requires role dev and mode build.
-# Local macOS mirrors are private to the machine, so local mode needs no role.
+# Local mirrors on macOS and bucy can be updated without a role.
 if [[ ${SPACK_STACK_UPDATE_DEV_CACHES} == "true" ]]; then
   if [[ "${SPACK_STACK_MODE}" != "local" && \
         ( ! ${SPACK_STACK_ROLE} == "dev" || ! ${SPACK_STACK_MODE} == "build" ) ]]; then
@@ -315,6 +315,14 @@ case ${SPACK_STACK_BATCH_HOST} in
     SPACK_STACK_BOOTSTRAP_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/bootstrap-mirror"
     SPACK_STACK_CARGO_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/cargo-mirror"
     ;;
+  bucy)
+    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.2.0" "gcc@=16.1.0" "oneapi@=2024.2.0" "oneapi@=2025.3.0" "nag@=7.2.43" "llvm@=22.1.0")
+    SPACK_STACK_BATCH_TEMPLATES=("geos-dev" "geos-dev-nag")
+    SPACK_STACK_MODULE_CHOICE="lmod"
+    SPACK_STACK_BOOTSTRAP_MIRROR="/ford1/share/gmao_SIteam/spack-stack/bootstrap-mirror"
+    SPACK_STACK_CARGO_MIRROR="/ford1/share/gmao_SIteam/spack-stack/cargo-mirror"
+    SPACK_STACK_ENVIRONMENT_DIRS=${SPACK_STACK_ENVIRONMENT_DIRS:-${PWD}/envs/bucy}
+    ;;
   macos.gmao)
     # Detect NAG Fortran Compiler
     nag_path_tmp=""
@@ -333,8 +341,8 @@ case ${SPACK_STACK_BATCH_HOST} in
     # Note: clang (aka flang) is on hold for macOS until we move to
     # 1. FMS 2025 (for GEOS purposes)
     # 2. ESMF PR https://github.com/esmf-org/esmf/pull/558 is merged and released/tagged
-    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0" "gcc@=16.1.0" "clang@=22.1.8")
-    #SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0" "gcc@=16.1.0" )
+    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0" "gcc@=16.2.0" "clang@=22.1.8")
+    #SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0" "gcc@=16.2.0" )
     if [[ -n "${MAC_GMAO_NAG_VERSION}" ]]; then
       SPACK_STACK_BATCH_COMPILERS+=("nag@=${MAC_GMAO_NAG_VERSION}")
     fi
@@ -357,8 +365,10 @@ case ${SPACK_STACK_BATCH_HOST} in
     ;;
 esac
 
-if [[ "${SPACK_STACK_MODE}" == "local" && "${SPACK_STACK_BATCH_HOST}" != "macos.gmao" ]]; then
-  echo "ERROR, mode 'local' is supported only for host macos.gmao"
+if [[ "${SPACK_STACK_MODE}" == "local" &&
+      "${SPACK_STACK_BATCH_HOST}" != "macos.gmao" &&
+      "${SPACK_STACK_BATCH_HOST}" != "bucy" ]]; then
+  echo "ERROR, mode 'local' is supported only for hosts macos.gmao and bucy"
   exit 1
 fi
 
@@ -403,6 +413,13 @@ function fix_permissions() {
       nice -n 19 find ${dir} -type f -print0 | xargs --null chmod a+r
       ;;
     discover-gmao)
+      nice -n 19 find ${dir} -type d -print0 | xargs --null chmod a+rx
+      if [[ ${executables} -eq 1 ]]; then
+        nice -n 19 find ${dir} -type f -executable -print0 | xargs --null chmod a+rx
+      fi
+      nice -n 19 find ${dir} -type f -print0 | xargs --null chmod a+r
+      ;;
+    bucy)
       nice -n 19 find ${dir} -type d -print0 | xargs --null chmod a+rx
       if [[ ${executables} -eq 1 ]]; then
         nice -n 19 find ${dir} -type f -executable -print0 | xargs --null chmod a+rx
@@ -766,7 +783,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         echo "          --site=${host} --compiler=${compiler_name}-${compiler_version} \\"
         echo "          --template=${template} --dir=${environment_dirs} --treat-warnings-as-errors"
         if [[ "${host}" == "macos.gmao" ]]; then
-          echo "[DRY-RUN] grep -v 'geos-gcm-env ~debug' ${env_dir}/spack.yaml  # remove ~debug spec (esmf ~debug unsupported on macOS)"
+          echo "[DRY-RUN] grep -vE 'geos-gcm-env([^[:space:]]*)?[[:space:]]+~debug' ${env_dir}/spack.yaml  # remove ~debug spec (esmf ~debug unsupported on macOS)"
         fi
       fi
       echo "[DRY-RUN] spack env activate -p ${env_dir}"
@@ -944,6 +961,12 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         module purge
         set -e
         ;;
+      bucy)
+        umask 0022
+        set +e
+        module purge
+        set -e
+        ;;
       macos.gmao)
         set +e
         ulimit -s unlimited 2>/dev/null || ulimit -s hard 2>/dev/null || ulimit -s 65532 2>/dev/null || true
@@ -1041,10 +1064,18 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
       # the geos-gcm-env ~debug spec from the environment spack.yaml if present.
       if [[ "${host}" == "macos.gmao" ]]; then
         env_spack_yaml="${env_dir}/spack.yaml"
-        if grep -q "geos-gcm-env ~debug" "${env_spack_yaml}" 2>/dev/null; then
-          echo "INFO: macOS: removing 'geos-gcm-env ~debug' spec from ${env_spack_yaml}"
-          grep -v "geos-gcm-env ~debug" "${env_spack_yaml}" > "${env_spack_yaml}.tmp" && mv "${env_spack_yaml}.tmp" "${env_spack_yaml}"
+        if grep -qE 'geos-gcm-env([^[:space:]]*)?[[:space:]]+~debug' "${env_spack_yaml}" 2>/dev/null; then
+          echo "INFO: macOS: removing GEOS-GCM '~debug' specs from ${env_spack_yaml}"
+          grep -vE 'geos-gcm-env([^[:space:]]*)?[[:space:]]+~debug' "${env_spack_yaml}" > "${env_spack_yaml}.tmp" && mv "${env_spack_yaml}.tmp" "${env_spack_yaml}"
         fi
+      fi
+
+      # GrADS is needed by unified GEOS environments on these production hosts,
+      # but should not add its GUI dependency chain elsewhere.
+      if [[ "${template}" == "unified-dev" &&
+            ( "${host}" == "discover" || "${host}" == "nas" || "${host}" == "nas-toss5" ) ]]; then
+        env_spack_yaml="${env_dir}/spack.yaml"
+        sed -i -E '/geos-gcm-env/ s/(geos-gcm-env[^[:space:]]*)/\1 +grads/' "${env_spack_yaml}"
       fi
 
       # Clean up the generated yamls in the site configuration now that the env is created
@@ -1070,6 +1101,11 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
       tcsh_version=$(${brew_prefix}/bin/tcsh --version | awk '{print $2}')
       rust_version=$(${brew_prefix}/bin/rustc --version | awk '{print $2}')
       cmake_version=$(${brew_prefix}/bin/cmake --version | head -1 | awk '{print $3}')
+
+      if [[ -z "${rust_version}" ]]; then
+        echo "ERROR: Unable to determine the Homebrew Rust version from ${brew_prefix}/bin/rustc"
+        exit 1
+      fi
 
       echo "Manually injecting tricky macOS packages into Spack configuration..."
       cat << EOF > spack-macos-externals.yaml

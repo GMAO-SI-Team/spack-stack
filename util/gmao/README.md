@@ -66,6 +66,7 @@ The script detects the current site from `$HOSTNAME` (stripping digits and domai
 | `nas` | NASA NAS Pleiades (TOSS 4) |
 | `nas-toss5` | NASA NAS Pleiades (TOSS 5) |
 | `macos.gmao` | macOS with Homebrew (GMAO SI Team) |
+| `bucy` | RHEL 8.10 host with shared GMAO SI Team software |
 
 ### Site-specific READMEs
 
@@ -73,6 +74,7 @@ For detailed workflow instructions for each site, see:
 
 - `configs/sites/tier2/discover-gmao/README.md` — Discover GMAO workflow
 - `configs/sites/tier2/macos.gmao/README.md` — macOS GMAO workflow
+- `configs/sites/tier2/bucy/README.md` — Bucy workflow
 
 ---
 
