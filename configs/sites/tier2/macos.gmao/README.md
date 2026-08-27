@@ -88,7 +88,7 @@ cd spack-stack-dev
 
 ## Using batch_install.sh script
 
-The `batch_install.sh` script automates environment creation, local mirror setup, package installation, and module generation. On macOS, use its one-step `local` mode: it installs directly into the final environment and does not publish or consume a shared buildcache.
+The `batch_install.sh` script automates environment creation, local mirror setup, package installation, and module generation. On macOS, use its one-step `local` mode: it installs directly into the final environment and publishes the resulting binaries to your private local buildcache for reuse by later installs.
 
 ### Usage help
 
@@ -124,7 +124,7 @@ On a new machine, use `-u` to populate private bootstrap, source, and Cargo mirr
 ./util/gmao/batch_install.sh -m local -H macos.gmao -u
 ```
 
-- `-m local`: Performs a one-step workstation install. It builds missing packages in the final environment, reuses any local cache entries, and generates modules and meta-modules when complete.
+- `-m local`: Performs a one-step workstation install. It reuses matching packages from the local cache, builds missing packages in the final environment, publishes the resulting binaries to the local cache, and generates modules and meta-modules when complete.
 - `-H macos.gmao`: Overrides hostname detection. This is required to force the script to use this specific generic macOS site, avoiding issues where VPNs or routers mask the real hostname.
 - `-u`: Updates and populates the private bootstrap, source, and Cargo mirrors.
 
@@ -146,21 +146,21 @@ To prevent cluttering the site configuration directory, the script writes these 
 
 Once the installation and module generation are complete, you can point your shell to the newly built modules. OpenMPI is built specifically with `~two_level_namespace` to support flat namespace linking required by GEOS. 
 
-To ensure executables (like MAPL tests) running under macOS System Integrity Protection (SIP) can properly resolve runtime paths (RPATHs) when using compilers like NAG, the `macos.gmao` site-level `modules.yaml` configuration explicitly permits exporting `DYLD_LIBRARY_PATH` and `DYLD_FALLBACK_LIBRARY_PATH` variables into your environment when loading modules.
+macOS System Integrity Protection (SIP) removes `DYLD_*` variables from child processes. The module configuration therefore also preserves module-derived library paths in `SPACK_DYLD_FALLBACK_LIBRARY_PATH`. GEOS run scripts can restore that value to `DYLD_FALLBACK_LIBRARY_PATH` immediately before launching the model.
 
-Depending on which compiler you built, you will need to add the correct `install/modulefiles/Core` directory to your `module use` path.
+Depending on which compiler you built, add its `modules/Core` directory to your `module use` path.
 
 #### Loading the GCC Stack
 
 ```bash
-module use -a /path/to/spack-stack/envs/ge-gcc-15.3.0/install/modulefiles/Core
+module use -a /path/to/spack-stack/envs/ge-gcc-15.3.0/modules/Core
 module load stack-gcc stack-openmpi geos-gcm-env
 ```
 
 #### Loading the NAG Stack
 
 ```bash
-module use -a /path/to/spack-stack/envs/ge-nag-7.2.7243/install/modulefiles/Core
+module use -a /path/to/spack-stack/envs/ge-nag-7.2.7243/modules/Core
 module load stack-nag stack-openmpi geos-gcm-env
 ```
 

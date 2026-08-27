@@ -1,4 +1,13 @@
 modules:
+  # DYLD_* is removed when a SIP-protected macOS executable starts. Preserve
+  # the module-derived loader search path in an ordinary variable as well.
+  prefix_inspections:
+    ./lib:
+    - DYLD_FALLBACK_LIBRARY_PATH
+    - SPACK_DYLD_FALLBACK_LIBRARY_PATH
+    ./lib64:
+    - DYLD_FALLBACK_LIBRARY_PATH
+    - SPACK_DYLD_FALLBACK_LIBRARY_PATH
   default:
     enable::
     - lmod
