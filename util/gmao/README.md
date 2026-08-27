@@ -43,6 +43,7 @@ Run with `-h` for full usage:
 | `-s` | Submit the install step to the batch scheduler (SLURM/PBS) instead of running interactively. |
 | `-e` | Continue if environment directories already exist. Required on all runs after the first. |
 | `-u` | Populate bootstrap, source, and cargo mirrors. Requires `-r dev -m build`. First run only. |
+| `-o` / `--concretize-only` | Stop after concretization; do not proceed to install. Useful for inspecting solver output before committing to a full build. |
 | `-a ACCOUNT` | Override the scheduler account (default: `s1873`). |
 | `-n` | Dry-run: print what would be executed without running anything. |
 | `-p` / `--partition` | Override SLURM partition. **NCCS hosts only** (discover, discover-gmao). |
@@ -65,6 +66,7 @@ The script detects the current site from `$HOSTNAME` (stripping digits and domai
 | `nas` | NASA NAS Pleiades (TOSS 4) |
 | `nas-toss5` | NASA NAS Pleiades (TOSS 5) |
 | `macos.gmao` | macOS with Homebrew (GMAO SI Team) |
+| `bucy` | RHEL 8.10 host with shared GMAO SI Team software |
 
 ### Site-specific READMEs
 
@@ -72,6 +74,7 @@ For detailed workflow instructions for each site, see:
 
 - `configs/sites/tier2/discover-gmao/README.md` — Discover GMAO workflow
 - `configs/sites/tier2/macos.gmao/README.md` — macOS GMAO workflow
+- `configs/sites/tier2/bucy/README.md` — Bucy workflow
 
 ---
 

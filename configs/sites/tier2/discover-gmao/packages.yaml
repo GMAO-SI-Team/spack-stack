@@ -3,6 +3,10 @@ packages:
   ewok-env:
     require:
     - '+ecflow'
+  # Completion-index generation can hang during isolated offline builds.
+  awscli-v2:
+    require:
+    - '~autocomplete'
   # Problems building shared hdf-eos2 with Intel, not needed
   hdf-eos2:
     variants: ~shared
@@ -79,6 +83,11 @@ packages:
     externals:
     - spec: git-lfs@3.4.0
       prefix: /usr/local/other/git-lfs/3.4.0
+  gh:
+    buildable: False
+    externals:
+    - spec: gh@2.96.0
+      prefix: /discover/swdev/gmao_SIteam/gh
   gmake:
     externals:
     - spec: gmake@4.2.1
@@ -98,6 +107,10 @@ packages:
   m4:
     externals:
     - spec: m4@1.4.18
+      prefix: /usr
+  ncurses:
+    externals:
+    - spec: ncurses@6.1 +termlib abi=6
       prefix: /usr
   openssh:
     externals:
