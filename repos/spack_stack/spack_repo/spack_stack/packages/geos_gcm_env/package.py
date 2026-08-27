@@ -17,7 +17,7 @@ class GeosGcmEnv(BundlePackage):
 
     # Current version
     version("12.1.0")
-    version("11.10.0")
+    version("11.10.0", preferred=True)
 
     variant("debug", default=False, description="Build debug version of selected dependencies")
     variant("fms", default=True, description="Build FMS as part of the environment")
