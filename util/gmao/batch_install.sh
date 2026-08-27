@@ -58,7 +58,7 @@ usage() {
   echo "  -m  Set mode, can be 'build', 'install', or 'local';"
   echo "      build: build environments and update build caches;"
   echo "      install: install environments using build caches;"
-  echo "      local: one-step, per-machine install (macos.gmao and bucy)"
+  echo "      local: one-step, per-machine install and cache update (macos.gmao and bucy)"
   echo "  -d  Build or install environments in ENV_DIRS;"
   echo "      if not set, the default location is used"
   echo "  -c  Provide location of build caches as BUILDCACHE_DIR;"
@@ -627,6 +627,7 @@ if [[ "${SPACK_STACK_MODE}" == "install" ]]; then
   update_cargo_mirror="false"
   update_source_cache="false"
   update_build_cache="false"
+  publish_build_cache="false"
   reuse_build_cache="true"
 elif [[ "${SPACK_STACK_MODE}" == "build" ]]; then
   if [[ "${SPACK_STACK_ROLE}" == "ops" ]]; then
@@ -648,11 +649,12 @@ elif [[ "${SPACK_STACK_MODE}" == "build" ]]; then
     exit 1
   fi
   update_build_cache="true"
+  publish_build_cache="true"
   reuse_build_cache="true"
 elif [[ "${SPACK_STACK_MODE}" == "local" ]]; then
   # A macOS stack is private to one workstation. Prepare its local source,
-  # bootstrap, and Cargo mirrors when requested, but install directly into the
-  # final environment and generate modules instead of publishing a buildcache.
+  # bootstrap, and Cargo mirrors when requested. Install directly into the
+  # final environment, generate modules, and publish a private buildcache.
   if [[ ${SPACK_STACK_UPDATE_DEV_CACHES} == "true" ]]; then
     update_bootstrap_mirror="true"
     update_cargo_mirror="true"
@@ -663,6 +665,7 @@ elif [[ "${SPACK_STACK_MODE}" == "local" ]]; then
     update_source_cache="false"
   fi
   update_build_cache="false"
+  publish_build_cache="true"
   reuse_build_cache="true"
 else
   echo "ERROR, invalid mode ${SPACK_STACK_MODE}"
@@ -907,6 +910,10 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
       fi
 
       if [[ "${update_build_cache}" == "true" ]]; then
+        echo "[DRY-RUN] spack buildcache push -u <binary_mirror_path>"
+        echo "[DRY-RUN] spack buildcache update-index local-binary"
+        echo "[DRY-RUN] fix_permissions ${host} <binary_mirror_path> 0"
+      elif [[ "${publish_build_cache}" == "true" ]]; then
         echo "[DRY-RUN] spack buildcache push -u <binary_mirror_path>"
         echo "[DRY-RUN] spack buildcache update-index local-binary"
         echo "[DRY-RUN] fix_permissions ${host} <binary_mirror_path> 0"
@@ -1367,8 +1374,9 @@ EOF
       bash ${install_script}
     fi
 
-    # In build mode, update local binary cache
-    if [[ "${update_build_cache}" == "true" ]]; then
+    # Publish binaries for build mode and for the private local mode. Local
+    # mode keeps the final environment name and still generates its modules.
+    if [[ "${publish_build_cache}" == "true" ]]; then
       spack buildcache push -u ${binary_mirror_path}
       spack buildcache update-index local-binary
     fi
@@ -1384,7 +1392,7 @@ EOF
     if [[ "${update_source_cache}" == "true" ]]; then
       fix_permissions ${host} ${source_mirror_path} 0
     fi
-    if [[ "${update_build_cache}" == "true" ]]; then
+    if [[ "${publish_build_cache}" == "true" ]]; then
       fix_permissions ${host} ${binary_mirror_path} 0
     fi
     if [[ "${update_cargo_mirror}" == "true" ]]; then
