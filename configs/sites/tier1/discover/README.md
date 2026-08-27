@@ -220,6 +220,19 @@ On the very first run, use `-u` to populate the bootstrap, source, and cargo mir
 - `-s`: Submits the install step to SLURM.
 - No `-e` needed since the environment directories do not exist yet.
 
+#### If one source fails while updating the cache
+
+The `-u` source-cache update mirrors many packages concurrently. If one reachable Git source fails to mirror, fetch that concrete spec serially on the login node instead of sending an offline compute-node job without its source:
+
+```bash
+. ./setup.sh
+spack -e envs/<build-environment> mirror create \
+  -d /discover/nobackup/projects/gmao/SIteam/spack-stack/source-cache \
+  <spec>
+```
+
+For example, `<spec>` can be `ioda-data@2.12.0`. After the command succeeds, resume `batch_install.sh` without `-u`. If the direct fetch also fails, investigate repository access or the package's source metadata before retrying.
+
 #### Step 2 — Rebuild or retry runs
 
 After the first run, the environment directories exist and the caches are populated. Drop `-u` and add `-e`:

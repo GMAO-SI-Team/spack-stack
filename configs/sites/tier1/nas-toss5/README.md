@@ -197,6 +197,19 @@ spack mirror create -a -d /swbuild/gmao_SIteam/spack-stack/source-cache
 > ⚠️ **Do not run this outside an activated environment.**
 > Otherwise Spack will attempt to mirror **every** known package/version.
 
+### If one source fails while updating the cache
+
+The `-u` source-cache update mirrors many packages concurrently. If one reachable Git source fails to mirror, fetch that concrete spec serially on the login node instead of submitting an offline compute-node job without its source:
+
+```bash
+. ./setup.sh
+spack -e envs/<build-environment> mirror create \
+  -d /swbuild/gmao_SIteam/spack-stack/source-cache \
+  <spec>
+```
+
+For example, `<spec>` can be `ioda-data@2.12.0`. After the command succeeds, resume `batch_install.sh` without `-u`. If the direct fetch also fails, investigate repository access or the package's source metadata before retrying.
+
 ---
 
 ## Pre-Fetch Cargo Dependencies (LOGIN NODE ONLY)
