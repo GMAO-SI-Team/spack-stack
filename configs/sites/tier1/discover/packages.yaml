@@ -14,11 +14,6 @@ packages:
     variants: ~shared
   met:
     variants: +python +grib2 +graphics +lidar2nc +modis
-  # GrADS requires cairo+X. Keep MET's graphics dependency consistent
-  # to avoid duplicate Cairo/MET/METplus nodes when both are enabled.
-  cairo:
-    require:
-    - +X
   # mimalloc is vendored and downloaded via FetchContent; fails on air-gapped compute nodes
   arrow:
     require:

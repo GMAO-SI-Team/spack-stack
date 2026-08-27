@@ -1077,14 +1077,6 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         fi
       fi
 
-      # GrADS is needed by unified GEOS environments on these production hosts,
-      # but should not add its GUI dependency chain elsewhere.
-      if [[ "${template}" == "unified-dev" &&
-            ( "${host}" == "discover" || "${host}" == "nas" || "${host}" == "nas-toss5" ) ]]; then
-        env_spack_yaml="${env_dir}/spack.yaml"
-        sed -i -E '/geos-gcm-env/ s/(geos-gcm-env[^[:space:]]*)/\1 +grads/' "${env_spack_yaml}"
-      fi
-
       # Clean up the generated yamls in the site configuration now that the env is created
       if [[ "${host}" == "macos.gmao" && ! ${env_exists} == "true" ]]; then
         rm -f "${SPACK_STACK_DIR}/configs/sites/tier2/${host}/mirrors.yaml"
