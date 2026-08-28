@@ -3,6 +3,16 @@ packages:
   ewok-env:
     require:
     - '+ecflow'
+  # Classic ifort can produce benign target-flag diagnostics which make
+  # ecbuild's compiler-flag probes fail. Trust the project-supplied flags.
+  ectrans:
+    require:
+    - spec: +trust_ecbuild_flags
+      when: '%oneapi'
+  oops:
+    require:
+    - spec: +trust_ecbuild_flags
+      when: '%oneapi'
   # Completion-index generation can hang during isolated offline builds.
   awscli-v2:
     require:

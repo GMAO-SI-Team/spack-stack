@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Patch/revert ecbuild_add_lang_flags.cmake to work around an ectrans build
-failure with oneapi at NAS (nas/nas-toss5).
+failure with oneapi on Discover and NAS.
 
 The problem: ecbuild's Fortran flag checker incorrectly determines that
 '-march=core-avx2 -no-fma' is not supported by ifx (via spack compiler
@@ -28,7 +28,7 @@ OLD = """    else()
       ecbuild_critical( "${_lang} compiler ${CMAKE_${_lang}_COMPILER} does not recognise ${_lang} flag '${_flags}'" )"""
 
 NEW = """    else()
-      ecbuild_info( "${_lang} compiler ${CMAKE_${_lang}_COMPILER} does not recognise ${_lang} flag '${_flags}' -- forcing anyway (NAS oneapi workaround)" )
+      ecbuild_info( "${_lang} compiler ${CMAKE_${_lang}_COMPILER} does not recognise ${_lang} flag '${_flags}' -- forcing anyway (Discover/NAS oneapi workaround)" )
       if( _PAR_BUILD )
         set( CMAKE_${_lang}_FLAGS_${_PAR_BUILD} "${CMAKE_${_lang}_FLAGS_${_PAR_BUILD}} ${_flags}" PARENT_SCOPE )
         ecbuild_info( "Added ${_lang} flag [${_flags}] to build type ${_PAR_BUILD}" )
@@ -63,7 +63,7 @@ def revert(cmake_file: Path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Patch/revert ecbuild for ectrans NAS oneapi workaround")
+    parser = argparse.ArgumentParser(description="Patch/revert ecbuild for ectrans Discover/NAS oneapi workaround")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--patch", action="store_true", help="Apply the patch")
     group.add_argument("--revert", action="store_true", help="Revert the patch")
