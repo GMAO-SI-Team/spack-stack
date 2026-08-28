@@ -12,6 +12,10 @@ packages:
     require:
     - spec: +trust_ecbuild_flags
       when: '%oneapi'
+  ioda:
+    require:
+    - spec: +trust_ecbuild_flags
+      when: '%oneapi'
   # Problems building shared hdf-eos2 with Intel, not needed
   hdf-eos2:
     variants: ~shared
