@@ -21,6 +21,12 @@ packages:
       - PrgEnv-gnu/8.6.0
       - comp-gcc/15.3.0
       extra_attributes:
+        # PrgEnv-gnu provides binutils from gcc-toolset-14.  Spack build
+        # environments can contain /usr/lib64 in LD_LIBRARY_PATH, which
+        # otherwise makes that ld load the incompatible system libctf.
+        environment:
+          prepend_path:
+            LD_LIBRARY_PATH: /opt/rh/gcc-toolset-14/root/usr/lib64
         compilers:
           c: /nobackup/gmao_SIteam/gcc/gcc-15.3.0-TOSS5/bin/gcc
           cxx: /nobackup/gmao_SIteam/gcc/gcc-15.3.0-TOSS5/bin/g++
