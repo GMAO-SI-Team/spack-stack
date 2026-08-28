@@ -74,6 +74,7 @@ class Ioda(CMakePackage):
     depends_on("odc@1.4.6:", when="@2.9: +odc")
     depends_on("oops+openmp", when="+openmp")
     depends_on("oops~openmp", when="~openmp")
+    depends_on("oops@1.12.0", when="@2.12.0")
     depends_on("oops@1.10.0.20260331", when="@2.9.0.20260326")
     depends_on("oops@1.10.0.20250827", when="@2.9.0.20250826")
     depends_on("python")
