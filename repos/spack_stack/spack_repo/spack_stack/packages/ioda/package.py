@@ -17,7 +17,6 @@ class Ioda(CMakePackage):
     maintainers("climbfuji")
 
     version("develop", branch="develop", no_cache=True)
-    version("2.12.0", commit="1fe47ac0cdb8d81e9051496cbc5c2ae60da8b765")
     version("2.9.0.20260326", commit="9e0eb39fb87ae66667ef966cf27b62d5a804cc54")
     version("2.9.0.20250826", commit="6e76616001067384f7d0ca4341ad78e81527af8b")
 
@@ -63,7 +62,6 @@ class Ioda(CMakePackage):
     depends_on("hdf5@1.12.0: +mpi")
     depends_on("hdf5@1.14.0: +mpi", when="@2.9:")
     depends_on("ioda-data", type=("build", "test"))
-    depends_on("ioda-data@2.12.0", type=("build", "test"), when="@2.12.0")
     depends_on("ioda-data@2.9.0.20260319", type=("build", "test"), when="@2.9.0.20260326")
     depends_on("ioda-data@2.9.0.20250805", type=("build", "test"), when="@2.9.0.20250826")
     depends_on("jedi-cmake", type=("build"))
@@ -75,11 +73,11 @@ class Ioda(CMakePackage):
     depends_on("odc@1.4.6:", when="@2.9: +odc")
     depends_on("oops+openmp", when="+openmp")
     depends_on("oops~openmp", when="~openmp")
-    depends_on("oops@1.13.0", when="@2.12.0")
     depends_on("oops@1.10.0.20260331", when="@2.9.0.20260326")
     depends_on("oops@1.10.0.20250827", when="@2.9.0.20250826")
     depends_on("python")
-    depends_on("python@3.9:3.11", when="@2.9")
+    # IODA 2.9 works with the Python 3.13 stack used by spack-stack.
+    depends_on("python@3.9:3.13", when="@2.9")
     depends_on("py-pybind11")
     depends_on("py-pycodestyle", type=("build", "test"))
     depends_on("py-netcdf4", type=("build", "test"))
@@ -114,13 +112,6 @@ class Ioda(CMakePackage):
                 "ioda_bufr_python_encoder",
                 "ioda_bufr_python_parallel",
             ]
-        with when("@2.12.0"):
-            # No time to deal with the bufr Python dependency
-            skipped_tests = [
-                "ioda_bufr_python_encoder",
-                "ioda_bufr_python_parallel",
-            ]
-
         ctest = Executable(self.spec["cmake"].prefix.bin.ctest)
         with working_dir(self.build_directory):
             if skipped_tests:
