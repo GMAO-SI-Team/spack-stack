@@ -68,3 +68,10 @@ packages:
   p4est:
     require:
     - 'ldflags="-lm"'
+
+  harfbuzz:
+    # Pango needs HarfBuzz's GObject bindings, but this TOSS5 GCC toolchain
+    # cannot link g-ir-scanner's temporary helper due to its libctf runtime.
+    # The generated GIR metadata is not needed by the stack.
+    require:
+    - ~introspection
