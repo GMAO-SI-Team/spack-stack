@@ -17,7 +17,6 @@ class Oops(CMakePackage):
     maintainers("climbfuji")
 
     version("develop", branch="develop", no_cache=True)
-    version("1.12.0", commit="4f19b4bff88da0098e2082c2ba91de4ff09de9e9")
     version("1.10.0.20260331", commit="0f7849866a74d17344215db8e742ba18c30a1ba5")
     # This commit plus the patch below accounts for commit
     # 2340e9b664f82de9fa01c136c3a31d87e4a0bec9 in NRL GitHub
