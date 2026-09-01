@@ -63,6 +63,7 @@ class Ioda(CMakePackage):
     depends_on("hdf5@1.12.0: +mpi")
     depends_on("hdf5@1.14.0: +mpi", when="@2.9:")
     depends_on("ioda-data", type=("build", "test"))
+    depends_on("ioda-data@2.12.0", type=("build", "test"), when="@2.12.0")
     depends_on("ioda-data@2.9.0.20260319", type=("build", "test"), when="@2.9.0.20260326")
     depends_on("ioda-data@2.9.0.20250805", type=("build", "test"), when="@2.9.0.20250826")
     depends_on("jedi-cmake", type=("build"))
