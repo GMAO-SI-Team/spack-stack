@@ -5,10 +5,6 @@ SPACK_STACK_DIR=$(dirname $(dirname ${SCRIPT_DIR}))
 
 set -e
 
-# Temporary escape hatch while testing the package-level ecbuild workaround.
-# Keep the established batch-time patch enabled unless explicitly suppressed.
-SPACK_STACK_ECBUILD_PATCH=${SPACK_STACK_ECBUILD_PATCH:-true}
-
 ##################################################################################################
 # Packages for which to run tests when "-t" is specified; caveat: must be listed in order of     #
 # their respective dependencies (e.g. A depends on B --> B comes first)                          #
@@ -237,7 +233,6 @@ echo "  SPACK_STACK_IGNORE_ENV_EXIST:                ${SPACK_STACK_IGNORE_ENV_EX
 echo "  SPACK_STACK_SUBMIT_TO_SCHEDULER:             ${SPACK_STACK_SUBMIT_TO_SCHEDULER:-false}"
 echo "  SPACK_STACK_DISABLE_LOCKS:                    ${SPACK_STACK_DISABLE_LOCKS:-false}"
 echo "  SPACK_STACK_RUN_TESTS:                       ${SPACK_STACK_RUN_TESTS:-false}"
-echo "  SPACK_STACK_ECBUILD_PATCH:                   ${SPACK_STACK_ECBUILD_PATCH}"
 echo "  ACCOUNT:                                     ${ACCOUNT:-s1873 (default)}"
 echo "  SPACK_STACK_SLURM_PARTITION:                 ${SPACK_STACK_SLURM_PARTITION:-use site default}"
 echo "  SPACK_STACK_SLURM_QOS:                       ${SPACK_STACK_SLURM_QOS:-use site default}"
@@ -820,18 +815,6 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         echo "[DRY-RUN] ./util/fetch_cargo_deps.py"
       fi
 
-      if [[ "${SPACK_STACK_ECBUILD_PATCH}" == "true" ]] && \
-         [[ "${host}" == "discover" || "${host}" == "nas" || "${host}" == "nas-toss5" ]] && \
-         [[ "${env_name_prefix}" == "ue" ]] && \
-         [[ "${compiler_name}" == "oneapi" ]]; then
-        echo "[DRY-RUN] # ectrans/ecbuild workaround (Discover/NAS oneapi):"
-        echo "[DRY-RUN] # See: https://github.com/JCSDA/spack-stack/issues/1775#issuecomment-3898802720"
-        echo "[DRY-RUN] spack ${spack_install_lock_flag} install ecbuild"
-        echo "[DRY-RUN] ./util/gmao/patch_ecbuild_ectrans.py --patch \$(spack location -i ecbuild)/.../ecbuild_add_lang_flags.cmake"
-        echo "[DRY-RUN] spack ${spack_install_lock_flag} install ectrans"
-        echo "[DRY-RUN] ./util/gmao/patch_ecbuild_ectrans.py --revert \$(spack location -i ecbuild)/.../ecbuild_add_lang_flags.cmake"
-      fi
-
       echo "[DRY-RUN] Generating ${install_script_name} and executing via:"
       echo "[DRY-RUN]   Generated install commands: spack ${spack_install_lock_flag} install ..."
       if [[ "${submit_to_scheduler}" == "true" ]]; then
@@ -1317,28 +1300,6 @@ elif [[ "${host}" == "discover-gmao" ]] && \
 fi
 
 $(declare -p test_packages)
-
-# Workaround for ectrans build failure with oneapi on Discover and NAS.
-# ecbuild's flag checker incorrectly rejects valid Fortran flags (-march=core-avx2 -no-fma).
-# Fix: patch ecbuild cmake to force-add the flags even when the check fails,
-# install ectrans, then revert the patch. Spack skips already-installed packages,
-# so the subsequent full install proceeds normally.
-# See: https://github.com/JCSDA/spack-stack/issues/1775#issuecomment-3898802720
-if [[ "${SPACK_STACK_ECBUILD_PATCH}" == "true" ]] && \
-   [[ "${host}" == "discover" || "${host}" == "nas" || "${host}" == "nas-toss5" ]] && \
-   [[ "${env_name_prefix}" == "ue" ]] && \
-   [[ "${compiler_name}" == "oneapi" ]]; then
-  set -o pipefail
-  echo "Installing ecbuild before ectrans workaround ..."
-  spack ${spack_install_lock_flag} install --verbose ${buildcache_install_flags} ecbuild 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.ecbuild
-  ecbuild_flags_cmake=\$(spack location -i ecbuild)/share/ecbuild/cmake/ecbuild_add_lang_flags.cmake
-  echo "Applying ectrans/ecbuild workaround to \${ecbuild_flags_cmake} ..."
-  ${SPACK_STACK_DIR}/util/gmao/patch_ecbuild_ectrans.py --patch \${ecbuild_flags_cmake}
-  spack ${spack_install_lock_flag} install --verbose ${buildcache_install_flags} ectrans 2>&1 | tee ${SPACK_STACK_DIR}/logs/log.install.${env_name}.${LOG_TIMESTAMP}.ectrans
-  set +o pipefail
-  echo "Reverting ectrans/ecbuild workaround ..."
-  ${SPACK_STACK_DIR}/util/gmao/patch_ecbuild_ectrans.py --revert \${ecbuild_flags_cmake}
-fi
 
 # If no tests are required, install everything
 if [[ \${#test_packages[@]} -eq 0 ]]; then

@@ -7,7 +7,6 @@ GMAO Spack-Stack Utilities
 - [Overview](#overview)
 - [batch\_install.sh](#batch_installsh)
 - [monitor\_install.py](#monitor_installpy)
-- [patch\_ecbuild\_ectrans.py](#patch_ecbuild_ectranspy)
 
 ---
 
@@ -125,32 +124,3 @@ The script exits automatically when:
 - No new log output for `--timeout` seconds (default: 5 minutes)
 
 ---
-
-## patch_ecbuild_ectrans.py
-
-A targeted patch script that works around an ectrans build failure with the Intel oneAPI compiler (`ifx`) at NAS (nas, nas-toss5).
-
-**Problem:** `ecbuild`'s Fortran flag checker incorrectly determines that `-march=core-avx2 -no-fma` is not supported by `ifx` and calls `ecbuild_critical()`, aborting the build. The flags are actually valid — the check is a false negative.
-
-**Fix:** Replaces the `ecbuild_critical()` call with the same logic as the success path, so the flags are always added regardless of the check result.
-
-See: https://github.com/JCSDA/spack-stack/issues/1775#issuecomment-3898802720
-
-### Usage
-
-```bash
-# Apply the patch
-python3 util/gmao/patch_ecbuild_ectrans.py --patch /path/to/ecbuild_add_lang_flags.cmake
-
-# Revert the patch (restores from the .orig backup created at patch time)
-python3 util/gmao/patch_ecbuild_ectrans.py --revert /path/to/ecbuild_add_lang_flags.cmake
-```
-
-The `ecbuild_add_lang_flags.cmake` file is typically found inside the staged or installed ectrans source tree within your spack environment. To locate it:
-
-```bash
-spack env activate -p envs/ue-oneapi-2024.2.0-build
-find $(spack location -i ecbuild) -name ecbuild_add_lang_flags.cmake
-```
-
-A `.orig` backup is created automatically when `--patch` is applied. `--revert` restores from this backup and removes it. If the patch has already been applied, the script will print a message and skip.
