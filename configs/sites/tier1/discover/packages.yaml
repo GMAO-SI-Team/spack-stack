@@ -104,8 +104,8 @@ packages:
       - git/2.49.0
   git-lfs:
     externals:
-    - spec: git-lfs@3.4.0
-      prefix: /usr/local/other/git-lfs/3.4.0
+    - spec: git-lfs@3.7.1
+      prefix: /discover/swdev/gmao_SIteam/other/SLES15.4/git-lfs/3.7.1
   gh:
     buildable: False
     externals:

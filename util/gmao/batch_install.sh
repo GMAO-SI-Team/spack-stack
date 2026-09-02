@@ -18,6 +18,35 @@ SPACK_STACK_PACKAGES_TO_TEST=(
   "ufo"
 )
 
+# IODA data repositories store their test inputs with Git LFS. Spack invokes
+# Git directly while populating the source mirror, before any concretized
+# package dependency can provide git-lfs. The site module purge removes it
+# from PATH, so make the site installation available explicitly.
+setup_git_lfs() {
+  local git_lfs_bin
+  case "${host}" in
+    discover|discover-gmao)
+      git_lfs_bin=/discover/swdev/gmao_SIteam/other/SLES15.4/git-lfs/3.7.1/bin
+      ;;
+    nas)
+      git_lfs_bin=/nobackup/gmao_SIteam/git-lfs/3.7.0/bin
+      ;;
+    nas-toss5)
+      git_lfs_bin=/nobackup/gmao_SIteam/git-lfs/3.7.1/bin
+      ;;
+    *)
+      return
+      ;;
+  esac
+
+  if [[ ! -x "${git_lfs_bin}/git-lfs" ]]; then
+    echo "ERROR: required git-lfs executable not found: ${git_lfs_bin}/git-lfs"
+    exit 1
+  fi
+  export PATH="${git_lfs_bin}:${PATH}"
+  echo "INFO: added git-lfs to PATH: ${git_lfs_bin}"
+}
+
 ##################################################################################################
 # Options                                                                                        #
 ##################################################################################################
@@ -810,6 +839,9 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
 
       if [[ "${update_source_cache}" == "true"* ]]; then
         echo "[DRY-RUN] spack mirror create -a -d <source_mirror_path>"
+        if [[ "${host}" == "discover" || "${host}" == "discover-gmao" || "${host}" == "nas" || "${host}" == "nas-toss5" ]]; then
+          echo "[DRY-RUN] prepending the site Git LFS installation to PATH for Git LFS source archives"
+        fi
       fi
       if [[ "${update_cargo_mirror}" == "true"* ]]; then
         echo "[DRY-RUN] ./util/fetch_cargo_deps.py"
@@ -830,6 +862,9 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
       if [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
          [[ "${compiler}" == "gcc@=15.2.0" ]]; then
         echo "[DRY-RUN]   Job preflight: module load comp/gcc/15.2.0 mpi/openmpi/5.0.10/gcc-15.2.0"
+      fi
+      if [[ "${host}" == "nas" ]] && [[ "${compiler}" == "gcc@=15.2.0" ]]; then
+        echo "[DRY-RUN]   Job preflight: module load comp-gcc/15.2.0 mpi-openmpi/4.1.8/gcc/15.2.0"
       fi
       if [[ "${host}" == "discover-gmao" ]] && \
          [[ "${compiler}" == "nag@=7.2.7238" ]]; then
@@ -978,6 +1013,8 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         exit 1
         ;;
     esac
+
+    setup_git_lfs
 
     # Info prints
     ulimit -a
@@ -1255,6 +1292,32 @@ set +e
 module purge
 set -e
 
+# IODA data repositories contain Git LFS objects. Keep the site Git LFS
+# executable available in case this job needs to fetch a version-controlled
+# source rather than consume a pre-created source archive.
+case "${host}" in
+  discover|discover-gmao)
+    git_lfs_bin=/discover/swdev/gmao_SIteam/other/SLES15.4/git-lfs/3.7.1/bin
+    ;;
+  nas)
+    git_lfs_bin=/nobackup/gmao_SIteam/git-lfs/3.7.0/bin
+    ;;
+  nas-toss5)
+    git_lfs_bin=/nobackup/gmao_SIteam/git-lfs/3.7.1/bin
+    ;;
+  *)
+    git_lfs_bin=
+    ;;
+esac
+if [[ -n "\${git_lfs_bin}" ]]; then
+  if [[ ! -x "\${git_lfs_bin}/git-lfs" ]]; then
+    echo "ERROR: required git-lfs executable not found: \${git_lfs_bin}/git-lfs"
+    exit 1
+  fi
+  export PATH="\${git_lfs_bin}:\${PATH}"
+  echo "INFO: added git-lfs to PATH: \${git_lfs_bin}"
+fi
+
 # Point cargo at the local mirror so rust builds don't try to reach the internet.
 export SPACK_CARGO_HOME=${cargo_mirror_path}
 export CARGO_NET_OFFLINE=true
@@ -1291,6 +1354,11 @@ elif [[ "${host}" == "discover" || "${host}" == "discover-gmao" ]] && \
      [[ "${compiler}" == "gcc@=15.2.0" ]]; then
   echo "INFO: preloading comp/gcc/15.2.0 and mpi/openmpi/5.0.10/gcc-15.2.0"
   module load comp/gcc/15.2.0 mpi/openmpi/5.0.10/gcc-15.2.0
+elif [[ "${host}" == "nas" ]] && [[ "${compiler}" == "gcc@=15.2.0" ]]; then
+  # The TOSS4 Open MPI module has a Tcl prereq on the matching GCC module.
+  # Load them in order so Spack workers inherit a valid module hierarchy.
+  echo "INFO: preloading comp-gcc/15.2.0 and mpi-openmpi/4.1.8/gcc/15.2.0"
+  module load comp-gcc/15.2.0 mpi-openmpi/4.1.8/gcc/15.2.0
 elif [[ "${host}" == "discover-gmao" ]] && \
      [[ "${compiler}" == "nag@=7.2.7238" ]]; then
   # This external OpenMPI was built with GCC C/C++ and NAG Fortran. Lmod
