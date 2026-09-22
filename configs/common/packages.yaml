@@ -111,7 +111,7 @@ packages:
       - +fix
     ecbuild:
       require:
-      - '@3.12.0'
+      - '@3.15.2'
     eccodes:
       require:
       - '@2.33.0'
@@ -181,7 +181,10 @@ packages:
       - '@2.6.4'
     fms:
       require:
-      - precision=32,64
+      - spec: precision=32,64
+        when: '@:2025.03'
+      - spec: precision=mixed
+        when: '@2025.04:'
       - +quad_precision
       - +openmp
       - +pic
@@ -190,6 +193,7 @@ packages:
       - any_of:
         - '@=2025.03'
         - '@=2024.03'
+        - '@=2026.01.01'
       - any_of:
         - +gfs_phys constants=GFS
         - ~gfs_phys constants=GEOS
@@ -250,7 +254,7 @@ packages:
       - ~netcdf
     hdf5:
       require:
-      - '@1.14.5'
+      - '@2.1.0'
       - +hl
       - +fortran
       - +mpi
@@ -342,9 +346,13 @@ packages:
     nemsiogfs:
       require:
       - '@2.5.4'
+    # Note: per spack, the first is "preferred", so if you
+    # need 1.9.0.1, you need to explicitly request it in your spec.
     nccmp:
       require:
-      - '@1.9.0.1'
+      - any_of:
+        - '@1.11.0.0'
+        - '@1.9.0.1'
     ncio:
       require:
       - '@1.1.2'
@@ -389,10 +397,11 @@ packages:
       require:
       - '@2.6.2'
       - +pnetcdf
-    # DH* CAN WE UPDATE? NEED A NEW SHARED-INTEL PATCH?
+    # 1.14.1 fixes a GCC 15 build failure. The old oneAPI shared-intel
+    # linkage workaround applied only to 1.12.3 and is intentionally not used.
     parallel-netcdf:
       require:
-      - '@1.12.3'
+      - '@1.14.1'
     pflogger:
       require:
       - +mpi
@@ -511,8 +520,14 @@ packages:
     # py-setuptools@77.0.3:. Re-evaluate issue #3695 if setuptools duplicates recur.
     py-torch:
       require:
+      - '@2.10:'
       - +custom-protobuf
       - ~mkldnn
+      # PyTorch 2.12 does not honor the recipe's USE_XPU=OFF setting when
+      # built through PEP 517. With oneAPI, Kineto then enables its XPU/PTI
+      # plugin, but the installed oneAPI toolkit does not provide PTI CMake
+      # configuration files. Re-enable once that forwarding issue is fixed.
+      - ~kineto
     # To avoid duplicate packages
     py-urllib3:
       require:
