@@ -4,7 +4,7 @@ packages:
   cxx:
     require: [apple-clang@@APPLE_CLANG_VERSION@]
   fortran:
-    require: [llvm@22.1.8 ~clang +flang]
+    require: [llvm@23.1.1 +clang +flang]
   mpi:
     require: [openmpi@=5.0.10]
   apple-clang:
@@ -18,10 +18,12 @@ packages:
   llvm:
     buildable: False
     externals:
-    - spec: llvm@22.1.8 ~clang +flang languages:='fortran'
-      prefix: @BREW_PREFIX@
+    - spec: llvm@23.1.1 +clang +flang ~lld ~lldb ~offload ~libomptarget
+      prefix: @BREW_PREFIX@/opt/llvm
       extra_attributes:
         compilers:
+          c: /usr/bin/clang
+          cxx: /usr/bin/clang++
           fortran: @BREW_PREFIX@/bin/flang
 
   openmpi:

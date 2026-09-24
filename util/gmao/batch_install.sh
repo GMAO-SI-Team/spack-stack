@@ -370,7 +370,7 @@ case ${SPACK_STACK_BATCH_HOST} in
     # Note: clang (aka flang) is on hold for macOS until we move to
     # 1. FMS 2025 (for GEOS purposes)
     # 2. ESMF PR https://github.com/esmf-org/esmf/pull/558 is merged and released/tagged
-    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0" "gcc@=16.2.0" "clang@=22.1.8")
+    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0" "gcc@=16.2.0" "clang@=23.1.1")
     #SPACK_STACK_BATCH_COMPILERS=("gcc@=15.3.0" "gcc@=16.2.0" )
     if [[ -n "${MAC_GMAO_NAG_VERSION}" ]]; then
       SPACK_STACK_BATCH_COMPILERS+=("nag@=${MAC_GMAO_NAG_VERSION}")
@@ -772,6 +772,11 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
     env_name=${env_name_prefix}-${compiler_name}-${compiler_version}
     [[ "${update_build_cache}" == "true" ]] && env_name=${env_name}-build
     env_dir=${environment_dirs}/${env_name}
+    template_for_compiler=${template}
+    if [[ "${host}" == "macos.gmao" && "${compiler_name}" == "clang" && "${template}" == "geos-dev" ]]; then
+      # GEOS 11.10.0 requires FMS 2024.03, which is unsupported by Flang.
+      template_for_compiler="geos-dev-flang"
+    fi
     # Different sites can legitimately build an identically named environment
     # at the same time (for example NAS TOSS4 and TOSS5). Keep the generated
     # job scripts distinct as well, since they share this working directory.
@@ -813,7 +818,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         fi
         echo "[DRY-RUN] spack stack create env --name=${env_name} \\"
         echo "          --site=${host} --compiler=${compiler_name}-${compiler_version} \\"
-        echo "          --template=${template} --dir=${environment_dirs} --treat-warnings-as-errors"
+        echo "          --template=${template_for_compiler} --dir=${environment_dirs} --treat-warnings-as-errors"
         if [[ "${host}" == "macos.gmao" ]]; then
           echo "[DRY-RUN] grep -vE 'geos-gcm-env([^[:space:]]*)?[[:space:]]+~debug' ${env_dir}/spack.yaml  # remove ~debug spec (esmf ~debug unsupported on macOS)"
         fi
@@ -830,8 +835,12 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         echo "[DRY-RUN] generating spack-macos-externals.yaml and applying with 'spack config add -f'"
       fi
       echo "[DRY-RUN] spack bootstrap list  # add local-sources and local-binaries if missing"
-      if [[ "${update_build_cache}" == "true" ]]; then
-        echo "[DRY-RUN] spack config add config:install_tree:padded_length:200"
+      if [[ "${update_build_cache}" == "true" || ( "${host}" == "macos.gmao" && "${publish_build_cache}" == "true" ) ]]; then
+        if [[ "${host}" == "macos.gmao" ]]; then
+          echo "[DRY-RUN] spack config add config:install_tree:padded_length:256"
+        else
+          echo "[DRY-RUN] spack config add config:install_tree:padded_length:200"
+        fi
       fi
       echo "[DRY-RUN] spack bootstrap now"
       echo "[DRY-RUN] spack concretize --force --fresh"
@@ -1088,7 +1097,7 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
       spack stack create env --name=${env_name} \
                              --site=${host} \
                              --compiler=${compiler_name}-${compiler_version} \
-                             --template=${template} \
+                             --template=${template_for_compiler} \
                              --dir=${environment_dirs} \
                              --treat-warnings-as-errors \
                              2>&1 | tee ${SPACK_STACK_DIR}/logs/log.create.${env_name}.${LOG_TIMESTAMP}
@@ -1190,8 +1199,12 @@ EOF
     fi
     echo "Spack binary mirror path: ${binary_mirror_path}"
 
-    if [[ "${update_build_cache}" == "true" ]]; then
-      spack config add config:install_tree:padded_length:200
+    if [[ "${update_build_cache}" == "true" || ( "${host}" == "macos.gmao" && "${publish_build_cache}" == "true" ) ]]; then
+      if [[ "${host}" == "macos.gmao" ]]; then
+        spack config add config:install_tree:padded_length:256
+      else
+        spack config add config:install_tree:padded_length:200
+      fi
     fi
 
     # Bootstrap spack explicitly
