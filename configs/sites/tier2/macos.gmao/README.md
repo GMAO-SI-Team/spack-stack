@@ -161,6 +161,15 @@ To include py-torch (`ai-env`, which also brings in `jedi-base-env`) in a new en
 ./util/gmao/batch_install.sh -m local -H macos.gmao --with-ai --suffix=ai
 ```
 
+Torch is heavy, so check first with a dry run (`-n`) and then concretize only (`-o`) before building:
+
+```bash
+./util/gmao/batch_install.sh -n -m local -H macos.gmao --with-ai --suffix=ai
+./util/gmao/batch_install.sh -m local -H macos.gmao --with-ai --suffix=ai -o
+```
+
+`--with-ai` only applies to newly created environments, not ones continued with `-e`.
+
 ### Generating `.yaml.generated` files
 `batch_install.sh` uses `.yaml.template` files in the `macos.gmao` site directory to dynamically detect the path to your Brew installation, your active `apple-clang` version, and your NAG compiler, creating `.yaml.generated` files on the fly. 
 To prevent cluttering the site configuration directory, the script writes these generated files directly to `configs/sites/tier2/macos.gmao/`, injects them directly into the target environment's `site/` directory during creation, and then automatically cleans up the temporary files from the configurations directory.

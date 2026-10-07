@@ -203,6 +203,15 @@ To include py-torch (`ai-env`, which also brings in `jedi-base-env`) in a new en
 ./util/gmao/batch_install.sh -r dev -m build -H discover -s --with-ai --suffix=ai
 ```
 
+Torch is heavy, so check first with a dry run (`-n`) and then concretize only (`-o`) before building:
+
+```bash
+./util/gmao/batch_install.sh -n -r dev -m build -H discover -s --with-ai --suffix=ai
+./util/gmao/batch_install.sh -r dev -m build -H discover -s --with-ai --suffix=ai -o
+```
+
+`--with-ai` only applies to newly created environments, not ones continued with `-e`.
+
 ### The -p, -q, and --constraint flags
 
 Override the SLURM partition, QOS, and node constraint independently:
