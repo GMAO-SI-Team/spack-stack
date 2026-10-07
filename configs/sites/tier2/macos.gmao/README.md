@@ -138,6 +138,23 @@ Once the local mirrors are set up, omit `-u`:
 ./util/gmao/batch_install.sh -m local -H macos.gmao -e
 ```
 
+### The --datestamp and --suffix flags
+
+By default, environments are named `<prefix>-<compiler>-<version>` (e.g. `ge-gcc-15.3.0`). To build an environment that others may be using and that you are less likely to remove by accident, tag its name:
+
+```bash
+# Append today's date: ge-gcc-15.3.0-YYYYMMDD
+./util/gmao/batch_install.sh -m local -H macos.gmao --datestamp
+
+# Append a custom label: ge-gcc-15.3.0-swelltest
+./util/gmao/batch_install.sh -m local -H macos.gmao --suffix=swelltest
+
+# Both: ge-gcc-15.3.0-YYYYMMDD-swelltest
+./util/gmao/batch_install.sh -m local -H macos.gmao --datestamp --suffix=swelltest
+```
+
+The tag is placed after any `-build` marker. A tagged environment is a separate directory, so it does not collide with untagged ones; use the same options together with `-e` to continue it.
+
 ### Generating `.yaml.generated` files
 `batch_install.sh` uses `.yaml.template` files in the `macos.gmao` site directory to dynamically detect the path to your Brew installation, your active `apple-clang` version, and your NAG compiler, creating `.yaml.generated` files on the fly. 
 To prevent cluttering the site configuration directory, the script writes these generated files directly to `configs/sites/tier2/macos.gmao/`, injects them directly into the target environment's `site/` directory during creation, and then automatically cleans up the temporary files from the configurations directory.

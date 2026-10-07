@@ -32,3 +32,8 @@ The shared installation, source, bootstrap, and cache locations are under
 `/ford1/share/gmao_SIteam/spack-stack`. Tcl module generation is intentionally
 not enabled in this first pass; it can be added after the Lmod hierarchy is
 validated.
+
+To keep an environment others may be using from being replaced, tag its name
+with `--datestamp` (appends `-YYYYMMDD`) and/or `--suffix=LABEL` (appends
+`-LABEL`), e.g. `./util/gmao/batch_install.sh -m local -H bucy --datestamp --suffix=swelltest`
+gives `ge-gcc-15.3.0-YYYYMMDD-swelltest`. Both are off by default.

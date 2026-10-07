@@ -125,6 +125,12 @@ usage() {
   echo "  -n  Dry-run: print what would be executed without running anything"
   echo "  -H  Provide hostname manually (overrides autodetection);"
   echo "      useful when VPN/etc masks the real hostname"
+  echo "      --suffix=<value>"
+  echo "          Append -<value> to environment names (e.g. ge-gcc-15.3.0-<value>);"
+  echo "          useful for keeping environments that others use from being replaced"
+  echo "      --datestamp"
+  echo "          Append -YYYYMMDD (today's date) to environment names;"
+  echo "          may be combined with --suffix (date comes first)"
   echo "  -h  display this help"
   echo
 }
@@ -171,6 +177,20 @@ while [[ $# -gt 0 ]]; do
       fi
       SPACK_STACK_SLURM_CONSTRAINT="$2"
       shift
+      ;;
+    --suffix=*)
+      SPACK_STACK_ENV_SUFFIX="${1#*=}"
+      ;;
+    --suffix)
+      if [[ -z "${2:-}" ]]; then
+        echo "ERROR, --suffix requires a value"
+        exit 1
+      fi
+      SPACK_STACK_ENV_SUFFIX="$2"
+      shift
+      ;;
+    --datestamp)
+      SPACK_STACK_ENV_DATESTAMP="true"
       ;;
     --help)
       normalized_args+=("-h")
@@ -256,6 +276,8 @@ echo "  SPACK_STACK_MODE:                            ${SPACK_STACK_MODE:-not set
 echo "  SPACK_STACK_ENVIRONMENT_DIRS:                ${SPACK_STACK_ENVIRONMENT_DIRS:-${SPACK_STACK_DIR}/envs}"
 echo "  SPACK_STACK_BUILDCACHE_DIR:                  ${SPACK_STACK_BUILDCACHE_DIR:-use default caches}"
 echo "  SPACK_STACK_BATCH_HOST_OPT:                  ${SPACK_STACK_BATCH_HOST_OPT:-autodetect}"
+echo "  SPACK_STACK_ENV_SUFFIX:                      ${SPACK_STACK_ENV_SUFFIX:-none}"
+echo "  SPACK_STACK_ENV_DATESTAMP:                   ${SPACK_STACK_ENV_DATESTAMP:-false}"
 echo "  SPACK_STACK_DRY_RUN:                         ${SPACK_STACK_DRY_RUN:-false}"
 echo "  SPACK_STACK_UPDATE_DEV_CACHES:               ${SPACK_STACK_UPDATE_DEV_CACHES:-false}"
 echo "  SPACK_STACK_IGNORE_ENV_EXIST:                ${SPACK_STACK_IGNORE_ENV_EXIST:-false}"
@@ -771,6 +793,8 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
     esac
     env_name=${env_name_prefix}-${compiler_name}-${compiler_version}
     [[ "${update_build_cache}" == "true" ]] && env_name=${env_name}-build
+    [[ "${SPACK_STACK_ENV_DATESTAMP:-false}" == "true" ]] && env_name=${env_name}-$(date +%Y%m%d)
+    [[ -n "${SPACK_STACK_ENV_SUFFIX:-}" ]] && env_name=${env_name}-${SPACK_STACK_ENV_SUFFIX}
     env_dir=${environment_dirs}/${env_name}
     template_for_compiler=${template}
     if [[ "${host}" == "macos.gmao" && "${compiler_name}" == "clang" && "${template}" == "geos-dev" ]]; then

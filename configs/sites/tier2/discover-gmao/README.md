@@ -181,6 +181,23 @@ When the account is `s1873`, the job defaults to `--partition=preops --qos=bench
 
 ---
 
+### The --datestamp and --suffix flags
+
+By default, environments are named `<prefix>-<compiler>-<version>` (e.g. `ge-gcc-15.3.0`). To build an environment that others may be using and that you are less likely to remove by accident, tag its name:
+
+```bash
+# Append today's date: ge-gcc-15.3.0-YYYYMMDD
+./util/gmao/batch_install.sh -r dev -m build -H discover-gmao -s --datestamp
+
+# Append a custom label: ge-gcc-15.3.0-swelltest
+./util/gmao/batch_install.sh -r dev -m build -H discover-gmao -s --suffix=swelltest
+
+# Both: ge-gcc-15.3.0-YYYYMMDD-swelltest
+./util/gmao/batch_install.sh -r dev -m build -H discover-gmao -s --datestamp --suffix=swelltest
+```
+
+The tag is placed after any `-build` marker. A tagged environment is a separate directory, so it does not collide with untagged ones; use the same options together with `-e` to continue it.
+
 ### The -p, -q, and --constraint flags
 
 Override the SLURM partition, QOS, and node constraint independently:
@@ -433,6 +450,8 @@ The following flags are less commonly used. The descriptions below reflect our b
 | `--constraint` | Override the SLURM node constraint. Defaults to `mil` (Milan nodes). No short form (`-c`/`-C` are taken). |
 | `-L` / `--disable-locks` | Disable Spack install locks and serialize package installs. Use only for an exclusive recovery job after a filesystem lock failure. |
 | `-o` / `--concretize-only` | Concretize environments and stop before installation. |
+| `--datestamp` | Append `-YYYYMMDD` to environment names. Off by default. |
+| `--suffix=LABEL` | Append `-LABEL` to environment names. Off by default. |
 | `-t` | Run tests for specific third-party dependencies after installation. The list of packages to test is hardcoded in `batch_install.sh`. |
 | `-u` | Populate bootstrap, source, and cargo mirrors. Requires `-r dev -m build`. Only needed on first run or when refreshing caches. |
 
