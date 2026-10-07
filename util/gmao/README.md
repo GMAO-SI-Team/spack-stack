@@ -54,6 +54,7 @@ Run with `-h` for full usage:
 | `-N NAGFOR_PATH` | Path to `nagfor` executable for NAG compiler detection (macOS only). |
 | `-t` | Run tests for hardcoded third-party packages after installation. |
 | `--datestamp` | Append `-YYYYMMDD` (today) to environment names, e.g. `ge-gcc-15.3.0-20261007`. Off by default. |
+| `--with-ai` | Add `ai-env` (py-torch + `jedi-base-env`) to the root specs of newly created environments. Expensive, so off by default; not applied to existing environments (`-e`). Combine with `--suffix=ai` to keep the name distinct. |
 | `--suffix=LABEL` | Append `-LABEL` to environment names (after the date when combined with `--datestamp`), e.g. `ge-gcc-15.3.0-20261007-swelltest`. Off by default. |
 
 ### Supported sites

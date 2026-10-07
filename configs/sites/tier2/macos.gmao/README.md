@@ -155,6 +155,12 @@ By default, environments are named `<prefix>-<compiler>-<version>` (e.g. `ge-gcc
 
 The tag is placed after any `-build` marker. A tagged environment is a separate directory, so it does not collide with untagged ones; use the same options together with `-e` to continue it.
 
+To include py-torch (`ai-env`, which also brings in `jedi-base-env`) in a new environment, add `--with-ai`; it is expensive, so it is off by default:
+
+```bash
+./util/gmao/batch_install.sh -m local -H macos.gmao --with-ai --suffix=ai
+```
+
 ### Generating `.yaml.generated` files
 `batch_install.sh` uses `.yaml.template` files in the `macos.gmao` site directory to dynamically detect the path to your Brew installation, your active `apple-clang` version, and your NAG compiler, creating `.yaml.generated` files on the fly. 
 To prevent cluttering the site configuration directory, the script writes these generated files directly to `configs/sites/tier2/macos.gmao/`, injects them directly into the target environment's `site/` directory during creation, and then automatically cleans up the temporary files from the configurations directory.

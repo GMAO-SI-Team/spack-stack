@@ -144,6 +144,12 @@ By default, environments are named `<prefix>-<compiler>-<version>` (e.g. `ge-gcc
 
 The tag is placed after any `-build` marker. A tagged environment is a separate directory, so it does not collide with untagged ones; use the same options together with `-e` to continue it.
 
+To include py-torch (`ai-env`, which also brings in `jedi-base-env`) in a new environment, add `--with-ai`; it is expensive, so it is off by default:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m build -H nas-toss5 -s --with-ai --suffix=ai
+```
+
 ## Manual workflow (fallback)
 
 The sections below describe the older manual workflow. Prefer `batch_install.sh` above for full-stack builds, especially when Rust packages are present.

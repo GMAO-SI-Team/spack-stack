@@ -197,6 +197,12 @@ By default, environments are named `<prefix>-<compiler>-<version>` (e.g. `ge-gcc
 
 The tag is placed after any `-build` marker. A tagged environment is a separate directory, so it does not collide with untagged ones; use the same options together with `-e` to continue it.
 
+To include py-torch (`ai-env`, which also brings in `jedi-base-env`) in a new environment, add `--with-ai`; it is expensive, so it is off by default:
+
+```bash
+./util/gmao/batch_install.sh -r dev -m build -H discover -s --with-ai --suffix=ai
+```
+
 ### The -p, -q, and --constraint flags
 
 Override the SLURM partition, QOS, and node constraint independently:
@@ -463,6 +469,7 @@ The following flags are less commonly used. The descriptions below reflect our b
 | `-q` / `--qos` | Override the SLURM QOS. Defaults to `benchmark` when account is `s1873`, otherwise unset. |
 | `--constraint` | Override the SLURM node constraint. Defaults to `mil` (Milan nodes). No short form (`-c`/`-C` are taken). |
 | `--datestamp` | Append `-YYYYMMDD` to environment names. Off by default. |
+| `--with-ai` | Add `ai-env` (py-torch + `jedi-base-env`) to newly created environments. Expensive; off by default. |
 | `--suffix=LABEL` | Append `-LABEL` to environment names. Off by default. |
 | `-t` | Run tests for specific third-party dependencies after installation. The list of packages to test is hardcoded in `batch_install.sh`. |
 | `-u` | Populate bootstrap, source, and cargo mirrors. Requires `-r dev -m build`. Only needed on first run or when refreshing caches. |

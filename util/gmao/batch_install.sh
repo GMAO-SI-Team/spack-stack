@@ -131,6 +131,9 @@ usage() {
   echo "      --datestamp"
   echo "          Append -YYYYMMDD (today's date) to environment names;"
   echo "          may be combined with --suffix (date comes first)"
+  echo "      --with-ai"
+  echo "          Add ai-env (py-torch + jedi-base-env) to the root specs of newly"
+  echo "          created environments; expensive, off by default"
   echo "  -h  display this help"
   echo
 }
@@ -191,6 +194,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --datestamp)
       SPACK_STACK_ENV_DATESTAMP="true"
+      ;;
+    --with-ai)
+      SPACK_STACK_WITH_AI="true"
       ;;
     --help)
       normalized_args+=("-h")
@@ -278,6 +284,7 @@ echo "  SPACK_STACK_BUILDCACHE_DIR:                  ${SPACK_STACK_BUILDCACHE_DI
 echo "  SPACK_STACK_BATCH_HOST_OPT:                  ${SPACK_STACK_BATCH_HOST_OPT:-autodetect}"
 echo "  SPACK_STACK_ENV_SUFFIX:                      ${SPACK_STACK_ENV_SUFFIX:-none}"
 echo "  SPACK_STACK_ENV_DATESTAMP:                   ${SPACK_STACK_ENV_DATESTAMP:-false}"
+echo "  SPACK_STACK_WITH_AI:                         ${SPACK_STACK_WITH_AI:-false}"
 echo "  SPACK_STACK_DRY_RUN:                         ${SPACK_STACK_DRY_RUN:-false}"
 echo "  SPACK_STACK_UPDATE_DEV_CACHES:               ${SPACK_STACK_UPDATE_DEV_CACHES:-false}"
 echo "  SPACK_STACK_IGNORE_ENV_EXIST:                ${SPACK_STACK_IGNORE_ENV_EXIST:-false}"
@@ -843,6 +850,9 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         echo "[DRY-RUN] spack stack create env --name=${env_name} \\"
         echo "          --site=${host} --compiler=${compiler_name}-${compiler_version} \\"
         echo "          --template=${template_for_compiler} --dir=${environment_dirs} --treat-warnings-as-errors"
+        if [[ "${SPACK_STACK_WITH_AI:-false}" == "true" ]]; then
+          echo "[DRY-RUN] add '- ai-env' to the specs in ${env_dir}/spack.yaml"
+        fi
         if [[ "${host}" == "macos.gmao" ]]; then
           echo "[DRY-RUN] grep -vE 'geos-gcm-env([^[:space:]]*)?[[:space:]]+~debug' ${env_dir}/spack.yaml  # remove ~debug spec (esmf ~debug unsupported on macOS)"
         fi
@@ -1133,6 +1143,16 @@ for compiler in "${SPACK_STACK_BATCH_COMPILERS[@]}"; do
         if grep -qE 'geos-gcm-env([^[:space:]]*)?[[:space:]]+~debug' "${env_spack_yaml}" 2>/dev/null; then
           echo "INFO: macOS: removing GEOS-GCM '~debug' specs from ${env_spack_yaml}"
           grep -vE 'geos-gcm-env([^[:space:]]*)?[[:space:]]+~debug' "${env_spack_yaml}" > "${env_spack_yaml}.tmp" && mv "${env_spack_yaml}.tmp" "${env_spack_yaml}"
+        fi
+      fi
+
+      # Optionally add ai-env (py-torch + jedi-base-env) as an extra root spec
+      if [[ "${SPACK_STACK_WITH_AI:-false}" == "true" ]]; then
+        echo "INFO: adding ai-env to the specs in ${env_dir}/spack.yaml"
+        sed -i 's/^  specs:[[:space:]]*$/&\n  - ai-env/' "${env_dir}/spack.yaml"
+        if ! grep -q '^  - ai-env$' "${env_dir}/spack.yaml"; then
+          echo "ERROR, could not add ai-env to ${env_dir}/spack.yaml"
+          exit 1
         fi
       fi
 
