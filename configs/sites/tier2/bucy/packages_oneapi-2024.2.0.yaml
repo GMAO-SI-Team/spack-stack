@@ -1,11 +1,36 @@
 packages:
   all:
     require:
-    - any_of: ['%oneapi@=2024.2.0']
-      when: '%oneapi'
+    - any_of: ['%intel-oneapi-compilers@=2024.2.0']
+      when: '%intel-oneapi-compilers'
+    - any_of: ['%gcc@=12.1.0']
+      when: '%gcc'
   mpi:
     buildable: false
-    require: [intel-oneapi-mpi@=2021.13]
+    require:
+    # Select mpiifort for the ifort compiler stack instead of the default mpiifx.
+    - "intel-oneapi-mpi@=2021.13 +classic-names"
+  intel-oneapi-compilers:
+    buildable: false
+    externals:
+    - spec: intel-oneapi-compilers@=2024.2.0 +fix_rt_linkage
+      prefix: /ford1/share/gmao_SIteam/intel/oneapi
+      extra_attributes:
+        compilers:
+          c: /ford1/share/gmao_SIteam/intel/oneapi/compiler/2024.2/bin/icx
+          cxx: /ford1/share/gmao_SIteam/intel/oneapi/compiler/2024.2/bin/icpx
+          fortran: /ford1/share/gmao_SIteam/intel/oneapi/compiler/2024.2/bin/ifort
+        extra_rpaths:
+        - /ford1/local/gcc/gcc-12.1.0/lib64
+  gcc:
+    buildable: false
+    externals:
+    - spec: gcc@=12.1.0 languages:='c,c++'
+      prefix: /ford1/local/gcc/gcc-12.1.0
+      extra_attributes:
+        compilers:
+          c: /ford1/local/gcc/gcc-12.1.0/bin/gcc
+          cxx: /ford1/local/gcc/gcc-12.1.0/bin/g++
   intel-oneapi-mpi:
     buildable: false
     externals:

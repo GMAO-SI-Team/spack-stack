@@ -374,7 +374,7 @@ case ${SPACK_STACK_BATCH_HOST} in
     SPACK_STACK_CARGO_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/cargo-mirror"
     ;;
   bucy)
-    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.2.0" "gcc@=16.1.0" "oneapi@=2024.2.0" "oneapi@=2025.3.0" "nag@=7.2.43" "llvm@=22.1.0")
+    SPACK_STACK_BATCH_COMPILERS=("gcc@=15.2.0" "gcc@=16.1.0" "oneapi@=2024.2.0" "oneapi@=2025.3.0" "nag@=7.2.43" "llvm@=22.1.0" "llvm@=23.1.0")
     SPACK_STACK_BATCH_TEMPLATES=("geos-dev" "geos-dev-nag")
     SPACK_STACK_MODULE_CHOICE="lmod"
     SPACK_STACK_BOOTSTRAP_MIRROR="/ford1/share/gmao_SIteam/spack-stack/bootstrap-mirror"

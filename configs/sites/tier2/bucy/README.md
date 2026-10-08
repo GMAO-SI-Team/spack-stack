@@ -13,6 +13,7 @@ The initial compiler matrix is:
 - `oneapi@=2025.3.0` with Intel MPI 2021.17
 - `nag@=7.2.43` with the patched OpenMPI 5.0.3
 - `llvm@=22.1.0` with OpenMPI 5.0.10
+- `llvm@=23.1.0` with OpenMPI 5.0.10
 
 The NAG license is not stored in this repository. Before building
 `geos-dev-nag`, ensure `NAG_KUSARI_FILE` points to the site license, or load
