@@ -31,7 +31,6 @@ class JediBaseEnv(BundlePackage):
     depends_on("bufr", type="run")
     depends_on("bufr-query", when="+bufrquery", type="run")
     # Force users to load manually
-    # depends_on("crtm@v2.4.1-jedi", type="run")
     depends_on("ecbuild", type="run")
     depends_on("eccodes", type="run")
     depends_on("eckit", type="run")

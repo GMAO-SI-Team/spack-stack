@@ -22,8 +22,7 @@ spack:
   - soca-env
 
   # Various crtm tags (list all to avoid duplicate packages)
-  - crtm@v2.4.1-jedi.2
-  - crtm@3.1.2
+  - crtm@3.1.5
 
   # Mapl with various esmf tags
   - mapl@2.53.0 ^esmf@8.6.1
