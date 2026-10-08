@@ -33,3 +33,11 @@ spack:
     fms:
       require::
       - ~quad_precision
+
+    # Use the same CDO variants (fftw3 and GRIB2 via eccodes) as geos-dev,
+    # so the stacks are consistent and do not change when other
+    # environments (e.g. ai-env) are present.
+    cdo:
+      require:
+      - +fftw3
+      - grib2=eccodes

@@ -28,3 +28,11 @@ spack:
       require:
       - +python
       - '@=9.0.0b18'
+    # Use one CDO build (with fftw3 and GRIB2 via eccodes) for all
+    # GEOS-GCM-ENV versions. Without this, the solver may pick different
+    # variants per geos-gcm-env version when other environments (e.g. ai-env)
+    # are present.
+    cdo:
+      require:
+      - +fftw3
+      - grib2=eccodes
