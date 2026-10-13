@@ -379,7 +379,6 @@ case ${SPACK_STACK_BATCH_HOST} in
     SPACK_STACK_MODULE_CHOICE="lmod"
     SPACK_STACK_BOOTSTRAP_MIRROR="/ford1/share/gmao_SIteam/spack-stack/bootstrap-mirror"
     SPACK_STACK_CARGO_MIRROR="/ford1/share/gmao_SIteam/spack-stack/cargo-mirror"
-    SPACK_STACK_ENVIRONMENT_DIRS=${SPACK_STACK_ENVIRONMENT_DIRS:-${PWD}/envs/bucy}
     ;;
   macos.gmao)
     # Detect NAG Fortran Compiler

@@ -34,7 +34,19 @@ The shared installation, source, bootstrap, and cache locations are under
 not enabled in this first pass; it can be added after the Lmod hierarchy is
 validated.
 
+Compilers are not defined in a `compilers.yaml`; each is declared as an
+external package (`gcc`, `llvm`, `intel-oneapi-compilers`, `nag`) in the
+matching `packages_<compiler>.yaml`, together with its MPI external. The
+OpenMPI externals list their variants explicitly (`~internal-hwloc
++two_level_namespace` is required by `configs/common/packages.yaml`, although
+these builds actually use the bundled hwloc). `packages.yaml` sets the target
+to `x86_64_v3`, declares the RHEL 8 system build tools (autoconf, automake,
+gmake, and so on) as externals, and forces the system `tar`, because
+`tar@1.35` fails to build against the system libacl headers.
+
+Environments are created directly under `envs/` (not `envs/bucy`).
+
 To keep an environment others may be using from being replaced, tag its name
 with `--datestamp` (appends `-YYYYMMDD`) and/or `--suffix=LABEL` (appends
 `-LABEL`), e.g. `./util/gmao/batch_install.sh -m local -H bucy --datestamp --suffix=swelltest`
-gives `ge-gcc-15.3.0-YYYYMMDD-swelltest`. Both are off by default.
+gives `ge-gcc-15.2.0-YYYYMMDD-swelltest`. Both are off by default.
