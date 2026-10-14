@@ -35,4 +35,4 @@ packages:
     buildable: false
     externals:
     - spec: intel-oneapi-mpi@=2021.13
-      prefix: /ford1/share/gmao_SIteam/intel/oneapi/mpi/2021.13
+      prefix: /ford1/share/gmao_SIteam/intel/oneapi
