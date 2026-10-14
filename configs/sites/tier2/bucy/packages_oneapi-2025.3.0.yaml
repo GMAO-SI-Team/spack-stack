@@ -19,6 +19,11 @@ packages:
           c: /ford1/share/gmao_SIteam/intel/oneapi/2025/compiler/2025.3/bin/icx
           cxx: /ford1/share/gmao_SIteam/intel/oneapi/2025/compiler/2025.3/bin/icpx
           fortran: /ford1/share/gmao_SIteam/intel/oneapi/2025/compiler/2025.3/bin/ifx
+        environment:
+          prepend_path:
+            PATH: /ford1/share/gmao_SIteam/gcc/gcc-13.3.0/bin
+            CPATH: /ford1/share/gmao_SIteam/gcc/gcc-13.3.0/include
+            LD_LIBRARY_PATH: '/ford1/share/gmao_SIteam/gcc/gcc-13.3.0/lib64'
         extra_rpaths:
         - /ford1/share/gmao_SIteam/gcc/gcc-13.3.0/lib64
   gcc:
@@ -34,4 +39,9 @@ packages:
     buildable: false
     externals:
     - spec: intel-oneapi-mpi@=2021.17
+      prefix: /ford1/share/gmao_SIteam/intel/oneapi/2025
+  intel-oneapi-mkl:
+    buildable: false
+    externals:
+    - spec: intel-oneapi-mkl@=2025.3
       prefix: /ford1/share/gmao_SIteam/intel/oneapi/2025
