@@ -139,3 +139,7 @@ packages:
     externals:
     - spec: zlib@1.2.11
       prefix: /usr
+  # GEOS requires nccmp 1.11.0.0; use it everywhere so the stack has a single nccmp
+  nccmp:
+    require:
+    - '@1.11.0.0'

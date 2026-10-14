@@ -50,3 +50,7 @@ packages:
     - spec: wget@1.25.0
       prefix: /Users/mathomp4/.homebrew/brew
     buildable: false
+  # GEOS requires nccmp 1.11.0.0; use it everywhere so the stack has a single nccmp
+  nccmp:
+    require:
+    - '@1.11.0.0'
