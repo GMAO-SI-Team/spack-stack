@@ -13,27 +13,27 @@ spack:
   - dev-utils-env
   - ewok-env
   - geos-gcm-env@11.10.0 ~debug +cdo +fms ^esmf@=9.0.0b18
-  - global-workflow-env   ^esmf@=8.8.0 ^crtm@=3.1.5
+  - global-workflow-env   ^esmf@=9.0.0b17 ^crtm@=3.1.5
 
-  - gmao-swell-env                     ^crtm@=3.1.5
-  - gsi-env                            ^crtm@=3.1.5
+  - gmao-swell-env                        ^crtm@=3.1.5
+  - gsi-env                               ^crtm@=3.1.5
   - jedi-fv3-env
   - jedi-geos-env         ^esmf@=9.0.0b18
   - jedi-mpas-env
   - jedi-neptune-env      ^esmf@=9.0.0b18
   - jedi-python-env
-  - jedi-ufs-env          ^esmf@=8.8.0
+  - jedi-ufs-env          ^esmf@=9.0.0b17
   - neptune-env           ^esmf@=9.0.0b18
   - neptune-python-env    ^esmf@=9.0.0b18
   - soca-env
-  - ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.5
-  - ufs-weather-model-env ^esmf@=8.8.0 ^crtm@=3.1.5
+  - ufs-srw-app-env       ^esmf@=9.0.0b17 ^crtm@=3.1.5
+  - ufs-weather-model-env ^esmf@=9.0.0b17 ^crtm@=3.1.5
 
   # Mapl with specific esmf tags (list all to avoid duplicate packages)
-  - mapl@2.53.4 ^esmf@8.8.0
+  - mapl@2.69.1 ^esmf@=9.0.0b17
 
   # Various esmf tags (list all to avoid duplicate packages)
-  - esmf@=8.8.0
+  - esmf@=9.0.0b17
   - esmf@=9.0.0b18
 
   # Various fms builds

@@ -98,9 +98,9 @@ The `batch_install.sh` script automates environment creation, local mirror setup
 
 ### Compiler Selection and Auto-Detection
 
-By default, `batch_install.sh` builds the `gcc@=15.3.0` stack. 
+By default, `batch_install.sh` builds the `gcc@=15.3.0` stack.
 
-The script will automatically detect your currently active version of Apple Clang (e.g. `apple-clang@21.0.0`) and substitute it into the templates. If the NAG Fortran compiler (`nagfor`) is found in your `PATH`, the script will automatically detect its version as well and add it to the build queue (e.g., `nag@=7.2.7243`). 
+The script will automatically detect your currently active version of Apple Clang (e.g. `apple-clang@21.0.0`) and substitute it into the templates. If the NAG Fortran compiler (`nagfor`) is found in your `PATH`, the script will automatically detect its version as well and add it to the build queue (e.g., `nag@=7.2.7243`).
 
 If your NAG compiler is installed in a non-standard location and not in your `PATH`, you can explicitly provide its path using the `-N` flag:
 
@@ -171,12 +171,12 @@ Torch is heavy, so check first with a dry run (`-n`) and then concretize only (`
 `--with-ai` only applies to newly created environments, not ones continued with `-e`.
 
 ### Generating `.yaml.generated` files
-`batch_install.sh` uses `.yaml.template` files in the `macos.gmao` site directory to dynamically detect the path to your Brew installation, your active `apple-clang` version, and your NAG compiler, creating `.yaml.generated` files on the fly. 
+`batch_install.sh` uses `.yaml.template` files in the `macos.gmao` site directory to dynamically detect the path to your Brew installation, your active `apple-clang` version, and your NAG compiler, creating `.yaml.generated` files on the fly.
 To prevent cluttering the site configuration directory, the script writes these generated files directly to `configs/sites/tier2/macos.gmao/`, injects them directly into the target environment's `site/` directory during creation, and then automatically cleans up the temporary files from the configurations directory.
 
 ### Loading the stack
 
-Once the installation and module generation are complete, you can point your shell to the newly built modules. OpenMPI is built specifically with `~two_level_namespace` to support flat namespace linking required by GEOS. 
+Once the installation and module generation are complete, you can point your shell to the newly built modules. OpenMPI is built specifically with `~two_level_namespace` to support flat namespace linking required by GEOS.
 
 macOS System Integrity Protection (SIP) removes `DYLD_*` variables from child processes. The module configuration therefore also preserves module-derived library paths in `SPACK_DYLD_FALLBACK_LIBRARY_PATH`. GEOS run scripts can restore that value to `DYLD_FALLBACK_LIBRARY_PATH` immediately before launching the model.
 
@@ -202,7 +202,7 @@ module load stack-nag stack-openmpi geos-gcm-env
 
 If you prefer to run the Spack commands manually instead of using `batch_install.sh`, you can still follow these steps. However, it's highly recommended to use `batch_install.sh` because it automatically handles dynamic template substitution (e.g., for Homebrew paths, `apple-clang` versions, and NAG compiler versions) that you will otherwise need to do manually with `sed`.
 
-If you choose to do this manually, you must first run `sed` over the `*.yaml.template` files and create the `.yaml.generated` files. 
+If you choose to do this manually, you must first run `sed` over the `*.yaml.template` files and create the `.yaml.generated` files.
 
 ### Create Environments
 
