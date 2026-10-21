@@ -460,6 +460,7 @@ The following flags are less commonly used. The descriptions below reflect our b
 | `-c BUILDCACHE_DIR` | Use a custom build cache directory. Required with `-r ops -m build` for operational partners who do not have write access to the shared mirrors. |
 | `-d ENV_DIRS` | Override the default environment directory (default: `envs/` in the repo root). |
 | `-C COMPILERS` | Comma-separated list of compilers to build (e.g., `gcc@=15.2.0,oneapi@=2025.3.0`). Overrides the site defaults. |
+| `-T TEMPLATES` | Comma-separated list of templates to build (e.g., `geos-dev` or `unified-dev,geos-dev`). Overrides the host's default templates. |
 | `-p` / `--partition` | Override the SLURM partition. Defaults to `preops` when account is `s1873`, otherwise unset. |
 | `-q` / `--qos` | Override the SLURM QOS. Defaults to `benchmark` when account is `s1873`, otherwise unset. |
 | `--constraint` | Override the SLURM node constraint. Defaults to `mil` (Milan nodes). No short form (`-c`/`-C` are taken). |

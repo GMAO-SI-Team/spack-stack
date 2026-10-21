@@ -98,6 +98,8 @@ usage() {
   echo "      by default, exit with an error if already exist"
   echo "  -C  Set a comma-separated list of compilers to use (e.g. gcc@=15.3.0,nag@=7.2.7243);"
   echo "      overrides the default compilers for the site"
+  echo "  -T  Set a comma-separated list of templates to use (e.g. geos-dev or unified-dev,geos-dev);"
+  echo "      overrides the default templates for the host"
   echo "  -N  Path to nagfor executable (e.g. /opt/nag/bin/nagfor);"
   echo "      forces NAG stack to be built using this specific compiler"
   echo "  -a  Set PBS/SLURM account (default: s1873);"
@@ -214,7 +216,7 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${normalized_args[@]}"
 
-while getopts r:m:d:c:C:N:H:a:p:q:nouestLh flag
+while getopts r:m:d:c:C:T:N:H:a:p:q:nouestLh flag
 do
   case "${flag}" in
     r)
@@ -231,6 +233,9 @@ do
       ;;
     C)
       SPACK_STACK_COMPILER_OPT=${OPTARG}
+      ;;
+    T)
+      SPACK_STACK_TEMPLATE_OPT=${OPTARG}
       ;;
     N)
       SPACK_STACK_NAGFOR_PATH=${OPTARG}
@@ -282,6 +287,7 @@ echo "  SPACK_STACK_MODE:                            ${SPACK_STACK_MODE:-not set
 echo "  SPACK_STACK_ENVIRONMENT_DIRS:                ${SPACK_STACK_ENVIRONMENT_DIRS:-${SPACK_STACK_DIR}/envs}"
 echo "  SPACK_STACK_BUILDCACHE_DIR:                  ${SPACK_STACK_BUILDCACHE_DIR:-use default caches}"
 echo "  SPACK_STACK_BATCH_HOST_OPT:                  ${SPACK_STACK_BATCH_HOST_OPT:-autodetect}"
+echo "  SPACK_STACK_TEMPLATE_OPT:                    ${SPACK_STACK_TEMPLATE_OPT:-use host default}"
 echo "  SPACK_STACK_ENV_SUFFIX:                      ${SPACK_STACK_ENV_SUFFIX:-none}"
 echo "  SPACK_STACK_ENV_DATESTAMP:                   ${SPACK_STACK_ENV_DATESTAMP:-false}"
 echo "  SPACK_STACK_WITH_AI:                         ${SPACK_STACK_WITH_AI:-false}"
@@ -361,7 +367,7 @@ case ${SPACK_STACK_BATCH_HOST} in
     ;;
   discover)
     SPACK_STACK_BATCH_COMPILERS=("oneapi@=2024.2.0" "oneapi@=2025.3.0" "gcc@=14.2.0" "gcc@=15.2.0")
-    SPACK_STACK_BATCH_TEMPLATES=("unified-dev")
+    SPACK_STACK_BATCH_TEMPLATES=("unified-dev" "geos-dev")
     SPACK_STACK_MODULE_CHOICE="lmod"
     SPACK_STACK_BOOTSTRAP_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/bootstrap-mirror"
     SPACK_STACK_CARGO_MIRROR="/discover/nobackup/projects/gmao/SIteam/spack-stack/cargo-mirror"
@@ -437,6 +443,11 @@ fi
 # Apply -C compiler override for all hosts (not just macos.gmao)
 if [[ -n "${SPACK_STACK_COMPILER_OPT}" ]]; then
   IFS=',' read -r -a SPACK_STACK_BATCH_COMPILERS <<< "${SPACK_STACK_COMPILER_OPT}"
+fi
+
+# Apply -T template override for all hosts
+if [[ -n "${SPACK_STACK_TEMPLATE_OPT}" ]]; then
+  IFS=',' read -r -a SPACK_STACK_BATCH_TEMPLATES <<< "${SPACK_STACK_TEMPLATE_OPT}"
 fi
 
 ##################################################################################################
