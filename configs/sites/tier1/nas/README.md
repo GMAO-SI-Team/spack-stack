@@ -175,10 +175,10 @@ The script creates one environment per compiler under `envs/` (relative to the r
 
 | Mode | Environment names created |
 |---|---|
-| `build` | `ue-oneapi-2024.2.0-build`, `ue-oneapi-2025.3.0-build`, `ue-gcc-15.2.0-build` |
-| `install` | `ue-oneapi-2024.2.0`, `ue-oneapi-2025.3.0`, `ue-gcc-15.2.0` |
+| `build` | `ue-oneapi-2024.2.0-build`, `ue-oneapi-2025.3.0-build`, `ue-gcc-15.2.0-build`; with the `geos-dev` template, `ge-` equivalents (e.g. `ge-oneapi-2024.2.0-build`) |
+| `install` | `ue-oneapi-2024.2.0`, `ue-oneapi-2025.3.0`, `ue-gcc-15.2.0`; with the `geos-dev` template, `ge-` equivalents (e.g. `ge-oneapi-2024.2.0`) |
 
-The `ue-` prefix comes from the `unified-dev` template used by this site. Use `-C` (comma-separated, e.g. `-C oneapi@=2024.2.0`) to select compilers and `-T` (comma-separated, e.g. `-T unified-dev`) to select templates.
+The `ue-` prefix comes from the `unified-dev` template and `ge-` from `geos-dev`; both are built by default on this site. Use `-C` (comma-separated, e.g. `-C oneapi@=2024.2.0`) to select compilers and `-T` (comma-separated, e.g. `-T unified-dev`) to select templates.
 
 ---
 
@@ -202,7 +202,7 @@ Replace `ue-oneapi-2024.2.0` with the appropriate environment name for your comp
 | `-c BUILDCACHE_DIR` | Use a custom build cache directory. Required with `-r ops -m build`. |
 | `-d ENV_DIRS` | Override the default environment directory (default: `envs/` in the repo root). |
 | `-C COMPILERS` | Comma-separated list of compilers to build (e.g., `oneapi@=2024.2.0,gcc@=15.2.0`). Overrides the site defaults. |
-| `-T TEMPLATES` | Comma-separated list of templates to build (e.g., `unified-dev`). Overrides the host's default templates. |
+| `-T TEMPLATES` | Comma-separated list of templates to build (e.g., `geos-dev` or `unified-dev,geos-dev`). Overrides the host's default templates (`unified-dev` and `geos-dev`). |
 | `-a ACCOUNT` | Override the PBS account (default: `s1873`). |
 | `-o` / `--concretize-only` | Concretize environments and stop before installation. |
 | `-n` | Dry run: print what would be executed. |
